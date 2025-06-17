@@ -50,18 +50,32 @@ const EnvironmentalSection: React.FC = () => {
   const renderEnvironmentalDataContent = () => {
     if (isLoadingEnvironmental && !environmentalData) return <EnvironmentalDataSkeleton />;
     
-    const noEnvData = !environmentalData || (!environmentalData.elevation && !environmentalData.soilPH && !environmentalData.soilOrganicCarbon && !environmentalData.soilCEC && !environmentalData.soilNitrogen && !environmentalData.soilSand && !environmentalData.soilSilt && !environmentalData.soilClay && !environmentalData.soilAWC && !environmentalData.error);
-    
-    if (environmentalData?.error && noEnvData) {
+    // Prioritize displaying specific error messages
+    if (environmentalData?.error) {
         return (
              <div className="flex flex-col items-center justify-center text-center p-4 h-full bg-[var(--status-red-bg)] rounded-lg border border-[var(--status-red)]">
                 <ExclamationTriangleIcon className="w-12 h-12 text-[var(--status-red-text)] mb-3" />
                 <p className="text-md font-semibold text-[var(--status-red-text)]">{uiStrings.errorTitle}</p>
-                <p className="text-sm text-[var(--status-red-text)] opacity-90 mt-1">{environmentalData.error}</p>
+                {/* Using a generic message for soil data errors as specific error details might be too technical or already part of environmentalData.error string from the service */}
+                <p className="text-sm text-[var(--status-red-text)] opacity-90 mt-1">{uiStrings.soilDataErrorGeneral || "Could not retrieve soil data. Please check your connection or try again."}</p>
             </div>
         );
     }
+
+    const noEnvData = !environmentalData || (!environmentalData.elevation && !environmentalData.soilPH && !environmentalData.soilOrganicCarbon && !environmentalData.soilCEC && !environmentalData.soilNitrogen && !environmentalData.soilSand && !environmentalData.soilSilt && !environmentalData.soilClay && !environmentalData.soilAWC);
+
     if (noEnvData && !isLoadingEnvironmental) {
+        // Specific message if SoilGrids indicates no data for the location
+        if (environmentalData?.source === 'SoilGrids (NoDataAtLocation)') {
+            return (
+                <div className="flex flex-col items-center justify-center text-center p-4 h-full bg-[var(--glass-bg-secondary)] rounded-lg border border-[var(--glass-border)]">
+                    <ExclamationTriangleIcon className="w-12 h-12 text-[var(--status-yellow-text)] mb-3" />
+                    <p className="text-md font-semibold text-[var(--text-headings)]">{uiStrings.soilDataNotAvailableForLocationTitle || "Soil Data Not Available"}</p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">{uiStrings.soilDataNotAvailableForLocation || "Soil data is not available for this specific location from our provider."}</p>
+                </div>
+            );
+        }
+        // Fallback general unavailable message
         return (
             <div className="flex flex-col items-center justify-center text-center p-4 h-full bg-[var(--glass-bg-secondary)] rounded-lg border border-[var(--glass-border)]">
                 <ExclamationTriangleIcon className="w-12 h-12 text-[var(--status-yellow-text)] mb-3" />

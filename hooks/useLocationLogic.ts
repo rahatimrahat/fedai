@@ -103,7 +103,7 @@ export function useLocationLogic() {
         setIsLoadingLocation(false);
         fetchIpLocationData(false); 
       },
-      { enableHighAccuracy: true, timeout: GEOLOCATION_HIGH_ACCURACY_TIMEOUT_MS, maximumAge: GEOLOCATION_MAXIMUM_AGE_MS }
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: GEOLOCATION_MAXIMUM_AGE_MS }
     );
   }, [uiStrings, fetchIpLocationData]);
 
