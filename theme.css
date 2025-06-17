@@ -1,0 +1,477 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Enhanced Apple-like variables */
+  --transition-duration: 0.4s;
+  --transition-timing: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --depth-overlay: 0 16px 50px -12px rgba(0, 0, 0, 0.2); /* For card hover */
+  --interaction-hover-scale: scale(1.03);
+  --interaction-active-scale: scale(0.98);
+
+  /* Glassmorphism foundation (Light Mode) */
+  --glass-bg-primary-light: rgba(253, 250, 242, 0.85); /* Ivory */
+  --glass-bg-secondary-light: rgba(231, 245, 229, 0.8); /* Plant-green */
+  --glass-border-light: rgba(255, 255, 255, 0.18);
+  --glass-shadow-light: 0 6px 20px rgba(0, 30, 20, 0.1);
+
+  /* Nature-inspired color palette (Light Mode) */
+  --primary-900-light: #2e7d32;  /* Deep green */
+  --primary-500-light: #4caf50;  /* Vibrant green */
+  --primary-100-light: #c8e6c9;  /* Leaf accent */
+  --accent-teal-light: #26a69a;  /* Earth accent */
+  --neutral-100-light: #f5f8f3;  /* Off-white, page background */
+  --text-headings-light: var(--primary-900-light);
+  --text-primary-light: #2d3748; /* Darker gray for primary text */
+  --text-secondary-light: #718096; /* Medium gray for secondary text */
+  --text-on-primary-light: #ffffff; /* White text on primary green buttons */
+  --text-link-light: var(--primary-500-light);
+  --border-color-soft-light: rgba(0, 0, 0, 0.08);
+  --border-color-card-light: var(--glass-border-light); /* Use glass border for cards */
+  
+  --primary-500-rgb: 76, 175, 80; /* RGB for --primary-500-light */
+  --accent-teal-rgb: 38, 166, 154; /* RGB for --accent-teal-light */
+  --focus-glow: 0 0 0 4px rgba(var(--primary-500-rgb), 0.15); /* Focus/Success States */
+
+  /* Status Colors - Light Mode */
+  --status-green-light: #388e3c;
+  --status-red-light: #d32f2f;
+  --status-yellow-light: #f57c00;
+  --status-blue-light: #1976d2;
+  --status-green-bg-light: rgba(200, 230, 201, 0.7); 
+  --status-red-bg-light: rgba(255, 205, 210, 0.7);   
+  --status-yellow-bg-light: rgba(255, 243, 224, 0.7);
+  --status-blue-bg-light: rgba(187, 222, 251, 0.7);  
+  --status-green-text-light: #1b5e20;
+  --status-red-text-light: #b71c1c;
+  --status-yellow-text-light: #bf360c; /* Darkened for better contrast (was #e65100) */
+  --status-blue-text-light: #0d47a1;
+
+  /* Typography */
+  --h1-size: 2rem;
+  --h2-size: 1.5rem;
+  --body-font: 'Inter', sans-serif;
+
+  /* Header Background */
+  --header-bg-light: #ffffff;
+
+
+  /* Assign light mode vars to generic vars by default */
+  --glass-bg-primary: var(--glass-bg-primary-light);
+  --glass-bg-secondary: var(--glass-bg-secondary-light);
+  --glass-border: var(--glass-border-light);
+  --glass-shadow: var(--glass-shadow-light);
+  --primary-900: var(--primary-900-light);
+  --primary-500: var(--primary-500-light);
+  --primary-100: var(--primary-100-light);
+  --btn-primary-border-color: var(--primary-900-light); /* New for button border */
+  --accent-teal: var(--accent-teal-light);
+  --neutral-100: var(--neutral-100-light); /* Page background */
+  --text-headings: var(--text-headings-light);
+  --text-primary: var(--text-primary-light);
+  --text-secondary: var(--text-secondary-light);
+  --text-on-primary: var(--text-on-primary-light);
+  --text-link: var(--text-link-light);
+  --border-color-soft: var(--border-color-soft-light);
+  --border-color-card: var(--border-color-card-light);
+
+  --status-green: var(--status-green-light);
+  --status-red: var(--status-red-light);
+  --status-yellow: var(--status-yellow-light);
+  --status-blue: var(--status-blue-light);
+  --status-green-bg: var(--status-green-bg-light);
+  --status-red-bg: var(--status-red-bg-light);
+  --status-yellow-bg: var(--status-yellow-bg-light);
+  --status-blue-bg: var(--status-blue-bg-light);
+  --status-green-text: var(--status-green-text-light);
+  --status-red-text: var(--status-red-text-light);
+  --status-yellow-text: var(--status-yellow-text-light);
+  --status-blue-text: var(--status-blue-text-light);
+  
+  /* Solution Pill Colors - Light Mode */
+  --pill-cultural-bg-light: rgba(var(--primary-100-rgb, 200, 230, 201), 0.5); /* Based on Leaf Accent */
+  --pill-cultural-text-light: var(--primary-900-light);
+  --pill-cultural-border-light: rgba(var(--primary-500-rgb), 0.3);
+
+  --pill-biological-bg-light: rgba(var(--primary-100-rgb, 200, 230, 201), 0.6);
+  --pill-biological-text-light: var(--primary-900-light);
+  --pill-biological-border-light: rgba(var(--primary-500-rgb), 0.4);
+  
+  --pill-chemical-bg-light: rgba(255, 235, 238, 0.7); /* Softer red base */
+  --pill-chemical-text-light: #c62828; 
+  --pill-chemical-border-light: rgba(229, 115, 115, 0.4);
+
+  --pill-observation-bg-light: rgba(227, 242, 253, 0.7); /* Softer blue base */
+  --pill-observation-text-light: #1565c0; 
+  --pill-observation-border-light: rgba(100, 181, 246, 0.4);
+
+  --pill-preventive-bg-light: rgba(var(--primary-100-rgb, 200, 230, 201), 0.7);
+  --pill-preventive-text-light: var(--primary-900-light);
+  --pill-preventive-border-light: rgba(var(--primary-500-rgb), 0.5);
+
+  --pill-fertilizer-bg-light: rgba(236, 239, 241, 0.7); /* Light gray base */
+  --pill-fertilizer-text-light: #455a64; 
+  --pill-fertilizer-border-light: rgba(176, 190, 197, 0.4);
+
+  --pill-default-bg-light: rgba(0,0,0,0.04);
+  --pill-default-text-light: var(--text-secondary-light);
+  --pill-default-border-light: var(--border-color-soft-light);
+
+  --pill-cultural-bg: var(--pill-cultural-bg-light);
+  --pill-cultural-text: var(--pill-cultural-text-light);
+  --pill-cultural-border: var(--pill-cultural-border-light);
+  --pill-biological-bg: var(--pill-biological-bg-light);
+  --pill-biological-text: var(--pill-biological-text-light);
+  --pill-biological-border: var(--pill-biological-border-light);
+  --pill-chemical-bg: var(--pill-chemical-bg-light);
+  --pill-chemical-text: var(--pill-chemical-text-light);
+  --pill-chemical-border: var(--pill-chemical-border-light);
+  --pill-observation-bg: var(--pill-observation-bg-light);
+  --pill-observation-text: var(--pill-observation-text-light);
+  --pill-observation-border: var(--pill-observation-border-light);
+  --pill-preventive-bg: var(--pill-preventive-bg-light);
+  --pill-preventive-text: var(--pill-preventive-text-light);
+  --pill-preventive-border: var(--pill-preventive-border-light);
+  --pill-fertilizer-bg: var(--pill-fertilizer-bg-light);
+  --pill-fertilizer-text: var(--pill-fertilizer-text-light);
+  --pill-fertilizer-border: var(--pill-fertilizer-border-light);
+  --pill-default-bg: var(--pill-default-bg-light);
+  --pill-default-text: var(--pill-default-text-light);
+  --pill-default-border: var(--pill-default-border-light);
+
+  /* Border Radii - Corner Smoothing */
+  --border-radius-sm: 0.5rem;  /* 8px */
+  --border-radius-md: 1rem;    /* 16px for cards */
+  --border-radius-lg: 1.25rem; /* 20px for main glass elements like header/footer/modals */
+
+  /* Added RGB version for primary-100 for pill backgrounds */
+  --primary-100-rgb: 200, 230, 201;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Glassmorphism foundation (Dark Mode) */
+    --glass-bg-primary: rgba(30, 41, 59, 0.85); /* Updated: Translucent dark slate (slate-800 based) */
+    --glass-bg-secondary: rgba(51, 65, 85, 0.8); /* Updated: Lighter translucent slate (slate-700 based) */
+    --glass-border: rgba(255, 255, 255, 0.1); 
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+
+    /* Nature-inspired color palette (Dark Mode) */
+    --primary-900: #a5d6a7;  
+    --primary-500: #81c784;  
+    --primary-100: #2e7d32;  /* Darker for contrast on dark bg */
+    --btn-primary-border-color: var(--primary-100); /* New for button border - dark green */
+    --accent-teal: #4db6ac;  
+    --neutral-100: #111827;  /* Updated: Softer dark gray (Tailwind gray-900) */
+    
+    --text-headings: #f3f4f6;    /* Updated: Tailwind gray-100 */
+    --text-primary: #d1d5db;     /* Updated: Tailwind gray-300 */
+    --text-secondary: #9ca3af;   /* Updated: Tailwind gray-400 */
+    --text-on-primary: #101210; 
+    --text-link: var(--primary-500);
+    --border-color-soft: rgba(255, 255, 255, 0.12);
+    --border-color-card: var(--glass-border);
+    
+    --primary-500-rgb: 129, 199, 132; /* For rgba shadow in dark mode */
+    --accent-teal-rgb: 77, 182, 172; /* RGB for --accent-teal in dark mode */
+    --focus-glow: 0 0 0 4px rgba(var(--primary-500-rgb), 0.25); /* Adjusted focus glow for dark mode */
+
+    /* Header Background */
+    --header-bg-dark: #1f2937; /* Tailwind's slate-800 (already correct from previous) */
+
+
+    /* Status Colors - Dark Mode */
+    --status-green: #66bb6a;
+    --status-red: #ef5350;
+    --status-yellow: #ffa726;
+    --status-blue: #42a5f5;
+    --status-green-bg: rgba(102, 187, 106, 0.2);
+    --status-red-bg: rgba(239, 83, 80, 0.2);
+    --status-yellow-bg: rgba(255, 167, 38, 0.2);
+    --status-blue-bg: rgba(66, 165, 245, 0.2);
+    --status-green-text: #c8e6c9;
+    --status-red-text: #ffcdd2;
+    --status-yellow-text: #ffe0b2;
+    --status-blue-text: #bbdefb;
+    
+    /* Solution Pill Colors - Dark Mode */
+    --primary-100-rgb: 46, 125, 50; /* Darker for --primary-100 in dark mode */
+
+    --pill-cultural-bg: rgba(var(--accent-teal-rgb), 0.25); 
+    --pill-cultural-text: #b2dfdb;
+    --pill-cultural-border: rgba(var(--accent-teal-rgb), 0.4);
+
+    --pill-biological-bg: rgba(var(--primary-100-rgb), 0.4); /* Based on dark leaf accent */
+    --pill-biological-text: #dcedc8; 
+    --pill-biological-border: rgba(var(--primary-500-rgb), 0.5);
+    
+    --pill-chemical-bg: rgba(239, 83, 80, 0.25); 
+    --pill-chemical-text: #ffcdd2;
+    --pill-chemical-border: rgba(239, 83, 80, 0.4);
+
+    --pill-observation-bg: rgba(66, 165, 245, 0.2); 
+    --pill-observation-text: #bbdefb;
+    --pill-observation-border: rgba(66, 165, 245, 0.35);
+
+    --pill-preventive-bg: rgba(var(--primary-100-rgb), 0.5);
+    --pill-preventive-text: #dcedc8;
+    --pill-preventive-border: rgba(var(--primary-500-rgb), 0.6);
+
+    --pill-fertilizer-bg: rgba(144, 164, 174, 0.2); 
+    --pill-fertilizer-text: #cfd8dc;
+    --pill-fertilizer-border: rgba(144, 164, 174, 0.35);
+
+    --pill-default-bg: rgba(255,255,255,0.08);
+    --pill-default-text: var(--text-secondary);
+    --pill-default-border: var(--border-color-soft);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Specifically target Framer Motion's typical style properties if needed,
+     though the above general rule often suffices. */
+  .motion-div, [data-framer-id] { /* Example selectors, adjust if Framer Motion uses specific attributes/classes */
+    /* No specific Framer Motion overrides needed if the * rule works. */
+  }
+}
+
+
+@layer base {
+  html { /* Added for Firefox scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-500) var(--primary-100); /* thumb track */
+  }
+  body {
+    color: var(--text-primary);
+    background-color: var(--neutral-100); 
+    font-smooth: antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.65;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-headings);
+    font-weight: 700; 
+    line-height: 1.3;
+  }
+   h1 { font-size: var(--h1-size); }
+   h2 { font-size: var(--h2-size); }
+   
+  p {
+    margin-bottom: 0.85rem;
+  }
+  ::selection {
+    background-color: var(--primary-100);
+    color: var(--primary-900);
+  }
+  hr {
+    border-color: var(--border-color-soft);
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.bg-glass {
+  background: var(--glass-bg-primary);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--border-radius-lg);
+}
+
+
+.pipeline-overlay-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw; 
+  height: 100vh; 
+  background-color: rgba(0, 20, 10, 0.4); /* Slightly less opaque */
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  z-index: 9999; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem; 
+  /* Animation for backdrop itself, if different from content */
+  animation: floatIn 0.3s ease-out; 
+}
+
+@keyframes floatIn { /* Keep floatIn if used by pipeline-overlay-backdrop */
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* .pipeline-modal-content is directly styled on PipelineVisualization's root div */
+
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-fadeInTooltip {
+  animation: fadeInTooltip 0.2s ease-out forwards;
+}
+
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center font-semibold rounded-md focus:outline-none px-5 py-2.5; 
+    letter-spacing: 0.025em;
+    transition: 
+        transform var(--transition-duration) var(--transition-timing), 
+        box-shadow var(--transition-duration) var(--transition-timing),
+        background-color var(--transition-duration) var(--transition-timing), /* Added background-color transition */
+        border-color var(--transition-duration) var(--transition-timing); /* Added border-color transition */
+    transform: translateY(0) scale(1); /* Base state for transform */
+    border-width: 1px; /* Default border width */
+    border-style: solid; /* Ensure border style is explicitly set */
+    box-shadow: 0 2px 6px rgba(var(--primary-500-rgb), 0.15); /* Slightly increased default shadow */
+  }
+  .btn:hover:not(:disabled) {
+    transform: translateY(-4px) var(--interaction-hover-scale);
+    /* box-shadow is now more pronounced directly, specific to button type */
+  }
+   .btn:active:not(:disabled) {
+    transform: translateY(-1px) var(--interaction-active-scale); 
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Softer active shadow */
+  }
+  .btn:focus-visible {
+    outline: none; /* Remove default outline */
+    box-shadow: var(--focus-glow);
+  }
+
+  .btn-primary {
+    @apply btn bg-[var(--primary-500)] text-[var(--text-on-primary)] disabled:bg-[var(--border-color-soft)] disabled:text-[var(--text-secondary)] disabled:border-[var(--border-color-soft)] disabled:cursor-not-allowed disabled:shadow-none;
+    border-color: var(--btn-primary-border-color); 
+    border-width: 2px; /* Explicitly set thicker border for primary button */
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--primary-900);
+    border-color: var(--primary-900); /* Keep border consistent with new bg on hover */
+    box-shadow: 0 6px 12px rgba(var(--primary-500-rgb), 0.25); /* Specific hover shadow */
+  }
+
+  .btn-secondary {
+    @apply btn bg-transparent text-[var(--primary-500)] border-[var(--glass-border)] disabled:bg-transparent disabled:text-[var(--border-color-soft)] disabled:border-[var(--border-color-soft)] disabled:cursor-not-allowed;
+    background-color: var(--glass-bg-secondary); /* Glassy secondary */
+  }
+   .btn-secondary:hover:not(:disabled) {
+     background-color: var(--glass-bg-primary); /* Slightly different glass on hover */
+     border-color: var(--primary-500); /* Stronger border color on hover */
+     color: var(--primary-900);
+     box-shadow: 0 4px 8px rgba(var(--primary-500-rgb), 0.15); /* Specific hover shadow */
+  }
+
+  .btn-accent { 
+    @apply btn bg-[var(--accent-teal)] text-white border-[var(--accent-teal)] disabled:bg-[var(--border-color-soft)] disabled:text-[var(--text-secondary)];
+    border-width: 2px; /* Give accent buttons a similar prominent border */
+  }
+  .btn-accent:hover:not(:disabled) {
+    background-color: hsl(174, 65%, 30%); /* Darker teal */
+    border-color: hsl(174, 65%, 30%);
+    box-shadow: 0 6px 12px rgba(var(--accent-teal-rgb), 0.25); /* Teal shadow */
+  }
+  
+  .card {
+    @apply bg-glass rounded-xl p-6; /* Uses .bg-glass for consistency */
+    transition: 
+        transform var(--transition-duration) var(--transition-timing),
+        box-shadow var(--transition-duration) var(--transition-timing);
+    /* box-shadow is var(--glass-shadow) by default from .bg-glass */
+  }
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--depth-overlay); /* Enhanced depth on hover */
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 border border-transparent rounded-md shadow-sm sm:text-sm transition-all duration-150 ease-in-out;
+    background: var(--glass-bg-secondary); 
+    backdrop-filter: blur(8px) saturate(120%);
+    -webkit-backdrop-filter: blur(8px) saturate(120%);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    line-height: 1.5;
+    border-radius: var(--border-radius-md); /* Smoother corners */
+  }
+  .input-field::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.8;
+  }
+  .input-field:focus, .input-field:focus-visible {
+     border-color: var(--primary-500);
+     background: var(--glass-bg-primary);
+     box-shadow: var(--focus-glow);
+     outline: none;
+  }
+
+  .location-prompt-card { 
+    @apply p-5 rounded-lg text-sm leading-relaxed; /* Use .bg-glass */
+    background: var(--glass-bg-secondary); /* Direct application for specificity if needed */
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-md);
+  }
+
+  /* Solution Pill Styles */
+  .pill-base {
+    @apply border text-xs font-semibold rounded-full px-3 py-1.5 shadow-sm inline-block; /* Slightly more padding */
+    transition: 
+        transform var(--transition-duration) var(--transition-timing),
+        box-shadow var(--transition-duration) var(--transition-timing),
+        background-color var(--transition-duration) var(--transition-timing);
+  }
+  .pill-base:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .pill-cultural { @apply pill-base bg-[var(--pill-cultural-bg)] text-[var(--pill-cultural-text)] border-[var(--pill-cultural-border)]; }
+  .pill-biological { @apply pill-base bg-[var(--pill-biological-bg)] text-[var(--pill-biological-text)] border-[var(--pill-biological-border)]; }
+  .pill-chemical { @apply pill-base bg-[var(--pill-chemical-bg)] text-[var(--pill-chemical-text)] border-[var(--pill-chemical-border)]; }
+  .pill-observation { @apply pill-base bg-[var(--pill-observation-bg)] text-[var(--pill-observation-text)] border-[var(--pill-observation-border)]; }
+  .pill-preventive { @apply pill-base bg-[var(--pill-preventive-bg)] text-[var(--pill-preventive-text)] border-[var(--pill-preventive-border)]; }
+  .pill-fertilizer { @apply pill-base bg-[var(--pill-fertilizer-bg)] text-[var(--pill-fertilizer-text)] border-[var(--pill-fertilizer-border)]; }
+  .pill-default { @apply pill-base bg-[var(--pill-default-bg)] text-[var(--pill-default-text)] border-[var(--pill-default-border)]; }
+
+  .solution-item-separator {
+    border-top-width: 1px;
+    border-color: var(--glass-border); 
+    opacity: 0.7; 
+    margin-top: 0.75rem; 
+    padding-top: 0.75rem;
+  }
+
+  /* Tab Button Styles */
+  .tab-button {
+    @apply px-4 py-2.5 text-sm font-medium -mb-px border-b-2 whitespace-nowrap transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-[var(--primary-500)] focus:ring-opacity-50 rounded-t-md;
+  }
+  .tab-button-active { /* For DiseaseResultCard and ContextualDataSection */
+    @apply border-[var(--primary-500)] text-[var(--primary-900)] bg-[var(--glass-bg-secondary)];
+  }
+  .tab-button-inactive { /* For DiseaseResultCard and ContextualDataSection */
+    @apply border-transparent text-[var(--text-secondary)] hover:text-[var(--primary-900)] hover:border-[var(--primary-100)] hover:bg-[var(--glass-bg-secondary)] opacity-70;
+  }
+  /* Specific for ContextualDataSection detailed weather tabs if slightly different padding is needed */
+  .weather-tab-button {
+    @apply px-4 py-2.5 text-sm font-medium -mb-px border-b-2 whitespace-nowrap transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-[var(--primary-500)] focus:ring-opacity-50 rounded-t-md;
+  }
+   .weather-tab-button-active {
+    @apply border-[var(--primary-500)] text-[var(--primary-900)]; /* No bg change needed here as it's inside a card already */
+  }
+  .weather-tab-button-inactive {
+    @apply border-transparent text-[var(--text-secondary)] hover:text-[var(--primary-900)] hover:border-[var(--primary-100)];
+  }
+
+}

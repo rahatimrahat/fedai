@@ -1,0 +1,8 @@
+{
+  "name": "Fedai: Plant Health AI",
+  "description": "An intelligent assistant leveraging advanced data federation for contextual insights. Utilizes image analysis and federated data (location, weather, soil, etc.) to provide actionable solutions, with a focus on efficient, non-login, cached data access.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "prompt": ""
+}
