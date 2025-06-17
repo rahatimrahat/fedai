@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { useLocalizationContext } from '../LocalizationContext.tsx';
+import { useLocalizationContext } from '@/components/LocalizationContext';
 import { type ConfidenceGaugeProps, type ConfidenceLevel, type QualitativeConfidenceData } from '../../types';
 import Tooltip from '../ui/Tooltip.tsx'; 
-import { InformationCircleIcon } from '../../icons';
+import { InformationCircleIcon } from '@/components/icons';
 
 const ConfidenceGauge: React.FC<ConfidenceGaugeProps> = ({ qualitativeConfidenceData, className = '' }) => {
   const { uiStrings } = useLocalizationContext();
