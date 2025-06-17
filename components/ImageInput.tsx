@@ -1,7 +1,7 @@
 
 import React, { useRef, useState } from 'react';
 import { type ImageFile } from '@/types';
-import { UploadIcon, CameraIcon, XCircleIcon, InformationCircleIcon, ChevronDownIcon } from '../icons';
+import { UploadIcon, CameraIcon, XCircleIcon, InformationCircleIcon, ChevronDownIcon } from '@/components/icons';
 import { useLocalizationContext } from './LocalizationContext.tsx';
 import PhotoGuidelines from './PhotoGuidelines.tsx'; // Import the new component
 import { 
