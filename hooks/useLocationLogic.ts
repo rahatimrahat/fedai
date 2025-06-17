@@ -103,7 +103,7 @@ export function useLocationLogic() {
         setIsLoadingLocation(false);
         fetchIpLocationData(false); 
       },
-      { enableHighAccuracy: false, timeout: 5000, maximumAge: GEOLOCATION_MAXIMUM_AGE_MS }
+      { enableHighAccuracy: false, timeout: 3000, maximumAge: GEOLOCATION_MAXIMUM_AGE_MS }
     );
   }, [uiStrings, fetchIpLocationData]);
 
@@ -116,7 +116,8 @@ export function useLocationLogic() {
         setLocationPermission(newStatus); 
 
          if (newStatus === 'granted') { 
-            fetchDeviceLocation(); 
+            fetchDeviceLocation();
+            fetchIpLocationData(true); // Fetch IP for enrichment in parallel
         } else if (newStatus === 'denied') {
             setLocationStatusMessage(uiStrings.locationPermissionDeniedUserMessage);
             fetchIpLocationData(false); 
@@ -144,8 +145,22 @@ export function useLocationLogic() {
       setLocationPermission(currentStatus);
 
       if (currentStatus === 'granted') {
-        if (!userLocation || userLocation.source !== 'gps') fetchDeviceLocation();
-        else setLocationStatusMessage(uiStrings.locationGpsSuccessMessage);
+        // If permission is granted, always attempt to fetch device location.
+        // Also, fetch IP location for enrichment or as a faster initial fix.
+        fetchDeviceLocation();
+        fetchIpLocationData(true); // Fetch IP for enrichment in parallel
+        // Set initial status message if not already set by a faster IP response
+        if (userLocation?.source !== 'gps' && userLocation?.source !== 'ip') {
+            setLocationStatusMessage(uiStrings.locationStatusFetching);
+        } else if (userLocation?.source === 'gps') {
+            setLocationStatusMessage(uiStrings.locationGpsSuccessMessage);
+        } else if (userLocation?.source === 'ip') {
+            // If IP came back super fast, its own message would be set.
+            // If not, this indicates we are starting with IP.
+             if (!locationStatusMessage.includes(uiStrings.locationIpSuccessMessage)) {
+                setLocationStatusMessage(uiStrings.fetchingIpLocation);
+             }
+        }
       } else if (currentStatus === 'prompt') {
         setLocationStatusMessage(uiStrings.locationPermissionPromptMessage);
       } else if (currentStatus === 'denied') {
@@ -175,8 +190,9 @@ export function useLocationLogic() {
   const requestLocationPermission = useCallback(() => {
     setLocationPermission('checking'); 
     setLocationStatusMessage(uiStrings.locationStatusFetching);
-    fetchDeviceLocation(); 
-  }, [uiStrings.locationStatusFetching, fetchDeviceLocation]);
+    fetchDeviceLocation();
+    fetchIpLocationData(true); // Fetch IP for enrichment in parallel
+  }, [uiStrings.locationStatusFetching, fetchDeviceLocation, fetchIpLocationData]);
 
   return {
     userLocation,
