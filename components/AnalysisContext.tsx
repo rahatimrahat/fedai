@@ -10,10 +10,10 @@ import {
   type Language,
   LanguageCode,
 } from '../types';
-import { analyzePlantHealth } from '../services/geminiService';
+import { analyzePlantHealth } from '@/services/geminiService';
 import { useLocalizationContext } from './LocalizationContext.tsx';
 import { useDataContext } from './DataContext.tsx'; 
-import { ALL_UI_STRINGS } from '../localization'; // For direct access if needed
+import { ALL_UI_STRINGS } from '@/localization'; // For direct access if needed
 
 interface AnalysisContextType {
   imageFile: ImageFile | null;
