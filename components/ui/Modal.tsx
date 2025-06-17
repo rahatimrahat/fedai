@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon } from '../../icons'; // Assuming you have an XMarkIcon
+import { XMarkIcon } from '@/components/icons'; // Assuming you have an XMarkIcon
 
 interface ModalAction {
   label: string;
