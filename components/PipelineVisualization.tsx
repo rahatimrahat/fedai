@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { type UiStrings, type PipelineStep, PipelineStepId } from '../types';
-import { CheckCircleIcon, ClockIcon, ChevronRightIcon } from '../icons'; 
+import { type UiStrings, type PipelineStep, PipelineStepId } from '@/types';
+import { CheckCircleIcon, ClockIcon, ChevronRightIcon } from '@/icons'; 
 import { useLocalizationContext } from './LocalizationContext.tsx';
 // BounceIn is used for the overlay in AnalysisFlowController.tsx, not directly here.
 // However, if PipelineVisualization itself needed animation, BounceIn would be imported.
