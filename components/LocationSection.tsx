@@ -2,7 +2,7 @@
 import React from 'react';
 import { useDataContext } from './DataContext.tsx';
 import { useLocalizationContext } from './LocalizationContext.tsx';
-import { MapPinIcon, InformationCircleIcon } from '../icons';
+import { MapPinIcon, InformationCircleIcon } from '@/components/icons';
 import LoadingSpinner from './ui/LoadingSpinner.tsx'; // Updated path
 import Tooltip from './ui/Tooltip.tsx'; // Updated path
 
