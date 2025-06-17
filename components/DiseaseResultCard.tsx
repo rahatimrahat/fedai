@@ -9,7 +9,7 @@ import {
     AcademicCapIcon, 
     EyeIcon, 
     AdjustmentsHorizontalIcon 
-} from '../icons'; 
+} from '@/components/icons';
 import { useLocalizationContext } from './LocalizationContext.tsx';
 import Tooltip from './ui/Tooltip.tsx'; 
 import BounceIn from './ui/BounceIn.tsx'; 
