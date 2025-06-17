@@ -12,7 +12,7 @@ import {
     CheckCircleIcon, 
     ExclamationTriangleIcon, 
     ClockIcon 
-} from '../icons';
+} from '@/components/icons';
 import BounceIn from './ui/BounceIn.tsx';
 
 interface ServiceDetail {
