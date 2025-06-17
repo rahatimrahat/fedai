@@ -10,7 +10,7 @@ import {
     IMAGE_MAX_DIMENSION_PX,
     IMAGE_COMPRESSION_QUALITY,
     MAX_IMAGE_FILE_SIZE_MB
-} from '../constants';
+} from '@/constants';
 import { useAnalysisContext } from './AnalysisContext.tsx';
 
 
