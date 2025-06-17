@@ -1,5 +1,5 @@
 
-import { type UserLocation, type WeatherData, type DailyWeatherData, type MonthlyAverageData, type TestServiceResult } from '../types';
+import { type UserLocation, type WeatherData, type DailyWeatherData, type MonthlyAverageData, type TestServiceResult } from '@/types';
 import { 
     CACHE_PREFIX_WEATHER,
     CACHE_DURATION_WEATHER_MS,
