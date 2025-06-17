@@ -9,7 +9,7 @@ import {
   type TestServiceResult,
   type QualitativeConfidenceData,
 } from '../types';
-import { GEMINI_ANALYSIS_TIMEOUT_MS, GEMINI_TEST_TIMEOUT_MS } from '../constants'; 
+import { GEMINI_ANALYSIS_TIMEOUT_MS, GEMINI_TEST_TIMEOUT_MS } from '@/constants';
 
 // Prompt construction helpers are removed from here and moved to the backend.
 
