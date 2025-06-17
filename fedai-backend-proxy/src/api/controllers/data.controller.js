@@ -19,7 +19,7 @@ const getIpLocation = async (req, res) => {
   try {
     // Try primary service: ipapi.co
     try {
-      const data = await robustFetch(IPAPI_CO_URL, { headers: { 'User-Agent': 'FedaiProxy/1.0' } });
+      const data = await robustFetch(IPAPI_CO_URL, { headers: { 'User-Agent': 'FedaiProxy/1.0' } }, 3500);
       if (!data.error && data.latitude && data.longitude) {
         return res.json({
           latitude: data.latitude,
@@ -37,7 +37,7 @@ const getIpLocation = async (req, res) => {
     }
 
     // Try secondary service: ip-api.com
-    const dataFallback = await robustFetch(IP_API_COM_URL, { headers: { 'User-Agent': 'FedaiProxy/1.0' } });
+    const dataFallback = await robustFetch(IP_API_COM_URL, { headers: { 'User-Agent': 'FedaiProxy/1.0' } }, 3500);
     if (dataFallback.status === 'success' && dataFallback.lat && dataFallback.lon) {
       return res.json({
         latitude: dataFallback.lat,
