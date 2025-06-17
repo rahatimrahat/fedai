@@ -13,7 +13,7 @@ import {
     ExclamationTriangleIcon
 } from '../icons';
 import LoadingSpinner from '../ui/LoadingSpinner.tsx'; 
-import { SparkLine } from '../ui/SparkLine.tsx';
+import { SparkLine } from '@/components/ui/SparkLine';
 import BounceIn from '../ui/BounceIn.tsx'; 
 import { getWmoDescription } from '../../localization';
 import { type CurrentWeatherData, type MonthlyAverageData, type UiStrings } from '../../types';
