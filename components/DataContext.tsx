@@ -1,7 +1,7 @@
 import React, { createContext, useContext, ReactNode, useRef } from 'react';
-import { useLocationLogic } from '../hooks/useLocationLogic';
-import { useContextualData } from '../hooks/useContextualData';
-import { UserLocation, WeatherData, EnvironmentalData } from '../types';
+import { useLocationLogic } from '@/hooks/useLocationLogic';
+import { useContextualData } from '@/hooks/useContextualData';
+import { UserLocation, WeatherData, EnvironmentalData } from '@/types';
 
 interface DataContextType {
   userLocation: UserLocation | null;
