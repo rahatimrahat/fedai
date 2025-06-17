@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { type UiStrings, type ServiceStatusInfo, type TestServiceResult } from '../types';
-import { testIpLocationService } from '../services/ipLocationService';
-import { testWeatherService } from '../services/weatherService';
-import { testElevationService } from '../services/elevationService';
-import { testSoilService } from '../services/soilService';
-import { testGeminiService } from '../services/geminiService';
+import { type UiStrings, type ServiceStatusInfo, type TestServiceResult } from '@/types';
+import { testIpLocationService } from '@/services/ipLocationService';
+import { testWeatherService } from '@/services/weatherService';
+import { testElevationService } from '@/services/elevationService';
+import { testSoilService } from '@/services/soilService';
+import { testGeminiService } from '@/services/geminiService';
 // No need to import useLocalizationContext here, as App.tsx will pass uiStrings to ServiceStatusFooter
 
 interface ServiceTestConfig {
