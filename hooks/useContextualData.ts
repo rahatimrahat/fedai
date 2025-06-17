@@ -4,7 +4,7 @@ import { type UserLocation, type WeatherData, type EnvironmentalData, type UiStr
 import { fetchWeatherData } from '../services/weatherService';
 import { fetchElevation } from '../services/elevationService';
 import { fetchSoilData } from '../services/soilService';
-import { useLocalizationContext } from '../components/LocalizationContext.tsx';
+import { useLocalizationContext } from '@/components/LocalizationContext';
 
 export function useContextualData(userLocation: UserLocation | null) {
   const { uiStrings, selectedLanguage } = useLocalizationContext();
