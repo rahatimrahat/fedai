@@ -5,7 +5,7 @@ import { useLocalizationContext } from './components/LocalizationContext.tsx';
 import LanguageSelector from './components/LanguageSelector.tsx';
 import ServiceStatusFooter from './components/ServiceStatusFooter.tsx';
 import LoadingSpinner from './components/ui/LoadingSpinner.tsx'; 
-import { LeafIcon, AdjustmentsHorizontalIcon, ExclamationTriangleIcon } from './icons';
+import { LeafIcon, AdjustmentsHorizontalIcon, ExclamationTriangleIcon } from '@/components/icons';
 import UnfurlingLeafIcon from './components/icons/UnfurlingLeafIcon.tsx'; 
 import { useServiceStatus } from './hooks/useServiceStatus';
 import AnalysisFlowController from './components/AnalysisFlowController.tsx';
