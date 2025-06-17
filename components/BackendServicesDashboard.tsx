@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { useLocalizationContext } from './LocalizationContext.tsx';
-import { useServiceStatus } from '../hooks/useServiceStatus';
-import { type ServiceStatusInfo, type UiStrings } from '../types';
+import { useServiceStatus } from '@/hooks/useServiceStatus';
+import { type ServiceStatusInfo, type UiStrings } from '@/types';
 import { 
     SparklesIcon, 
     GlobeEuropeAfricaIcon, 
