@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { type ServiceStatusInfo } from '../types';
+import { type ServiceStatusInfo } from '@/types';
 import { CheckCircleIcon, ExclamationTriangleIcon, ClockIcon } from '@/components/icons';
 import { useLocalizationContext } from './LocalizationContext.tsx';
 // Tooltip is not directly used in ServiceStatusFooter, but keeping for consistency if it were.
