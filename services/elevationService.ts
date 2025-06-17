@@ -1,10 +1,10 @@
 
-import { type UserLocation, type TestServiceResult } from '../types';
+import { type UserLocation, type TestServiceResult } from '@/types';
 import { 
     CACHE_PREFIX_ELEVATION, 
     CACHE_DURATION_ELEVATION_MS,
     SERVICE_TEST_TIMEOUT_MS
-} from '../constants';
+} from '@/constants';
 import { getCachedOrFetch } from './cache'; // Import the generic cache utility
 
 const PROXY_ELEVATION_ENDPOINT = '/api/elevation';
