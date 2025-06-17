@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useLocalizationContext } from './LocalizationContext.tsx';
-import { CheckCircleIcon } from '../icons'; // Assuming you have this or similar icon
+import { CheckCircleIcon } from '@/components/icons'; // Assuming you have this or similar icon
 
 interface PhotoGuidelinesProps {
   isVisible: boolean;
