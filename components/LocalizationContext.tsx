@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { Language, LanguageCode, UiStrings, ALL_UI_STRINGS } from '../types';
-import { getEffectiveUiStrings, LANGUAGES } from '../localization';
-import { LOCAL_STORAGE_LANGUAGE_KEY, DEFAULT_LANGUAGE_CODE } from '../constants';
+import { Language, LanguageCode, UiStrings, ALL_UI_STRINGS } from '@/types';
+import { getEffectiveUiStrings, LANGUAGES } from '@/localization';
+import { LOCAL_STORAGE_LANGUAGE_KEY, DEFAULT_LANGUAGE_CODE } from '@/constants';
 
 interface LocalizationContextType {
   uiStrings: UiStrings;
