@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { type DiseaseInfo, type SolutionDetail, type QualitativeConfidenceData } from '../types';
+import { type DiseaseInfo, type SolutionDetail, type QualitativeConfidenceData } from '@/types';
 import { 
     SparklesIcon, 
     InformationCircleIcon, 
