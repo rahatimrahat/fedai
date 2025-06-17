@@ -14,7 +14,7 @@ import EnvironmentalSection from './contextual/EnvironmentalSection.tsx';
 import {
   PipelineStepId,
   type PipelineStep,
-} from '../types';
+} from '@/types';
 import { 
   CloudArrowUpIcon, 
   ChatBubbleLeftRightIcon,
@@ -23,9 +23,9 @@ import {
   SunIcon, 
   SparklesIcon, 
 } from '@/components/icons';
-import { useElementScroll } from '../hooks/useElementScroll';
-import { useModalAccessibility } from '../hooks/useModalAccessibility';
-import { useFocusOnCondition } from '../hooks/useFocusOnCondition'; // Import the new hook
+import { useElementScroll } from '@/hooks/useElementScroll';
+import { useModalAccessibility } from '@/hooks/useModalAccessibility';
+import { useFocusOnCondition } from '@/hooks/useFocusOnCondition'; // Import the new hook
 
 const MemoizedDiseaseResultCard = React.memo(DiseaseResultCard);
 
