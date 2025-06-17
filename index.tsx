@@ -1,11 +1,11 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
-import { LocalizationProvider } from './components/LocalizationContext.tsx';
-import { DataProvider } from './components/DataContext.tsx';
-import { AnalysisProvider } from './components/AnalysisContext.tsx';
-import ErrorBoundary from './components/ErrorBoundary.tsx'; // Import ErrorBoundary
+import App from '@/App';
+import { LocalizationProvider } from '@/components/LocalizationContext';
+import { DataProvider } from '@/components/DataContext';
+import { AnalysisProvider } from '@/components/AnalysisContext';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
