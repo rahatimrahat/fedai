@@ -1,5 +1,5 @@
 
-import { CACHE_THROTTLE_DELAY_MS } from '../constants';
+import { CACHE_THROTTLE_DELAY_MS } from '@/constants';
 import { throttle } from 'lodash-es';
 
 interface CachedItem<T> {
