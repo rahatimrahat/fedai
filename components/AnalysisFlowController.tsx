@@ -22,7 +22,7 @@ import {
   GlobeEuropeAfricaIcon,
   SunIcon, 
   SparklesIcon, 
-} from '../icons';
+} from '@/components/icons';
 import { useElementScroll } from '../hooks/useElementScroll';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { useFocusOnCondition } from '../hooks/useFocusOnCondition'; // Import the new hook
