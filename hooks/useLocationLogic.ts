@@ -1,8 +1,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { type UserLocation, type LocationPermissionState } from '../types';
-import { fetchIpLocation } from '../services/ipLocationService';
-import { useLocalizationContext } from '../components/LocalizationContext.tsx';
+import { type UserLocation, type LocationPermissionState } from '@/types';
+import { fetchIpLocation } from '@/services/ipLocationService';
+import { useLocalizationContext } from '@/components/LocalizationContext.tsx';
 import { GEOLOCATION_HIGH_ACCURACY_TIMEOUT_MS, GEOLOCATION_MAXIMUM_AGE_MS } from '../constants';
 
 
