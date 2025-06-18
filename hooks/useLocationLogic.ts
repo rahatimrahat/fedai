@@ -52,19 +52,30 @@ export function useLocationLogic() {
       } else {
           // This is an initial IP fetch or a fallback IP fetch.
           setUserLocation(ipLocationWithDetail);
-          // Now, set status message carefully based on current permission state
+          // Now, set status message carefully based on current permission state and existing location data
           if (locationPermission === 'prompt') {
+              // IP fetch succeeded while permission is 'prompt'. User may grant GPS next.
+              // Message: "Approximate location found ([City, Country] via [Service]). Please respond to the browser's location permission request."
               setLocationStatusMessage(`${ipLocationWithDetail.accuracyMessage}. ${uiStrings.locationStatusAttemptingAutoFetch || uiStrings.locationPermissionPromptMessage}`);
           } else if (locationPermission === 'granted' && userLocation?.source !== 'gps') {
-              // IP succeeded, but GPS is expected (granted) but not yet successful
-              setLocationStatusMessage(`${ipLocationWithDetail.accuracyMessage}. ${uiStrings.locationStatusFetching}`); // "Approximate found. Fetching precise..."
+              // IP fetch succeeded, permission is 'granted', but we don't have GPS yet (or GPS failed after initial grant).
+              // This means we are trying/should be trying to get GPS, so message indicates approximate found while fetching precise.
+              // Message: "Approximate location found ([City, Country] via [Service]). Fetching precise location..."
+              setLocationStatusMessage(`${ipLocationWithDetail.accuracyMessage}. ${uiStrings.locationStatusFetching}`);
           } else if (locationPermission !== 'granted' || userLocation?.source === 'gps') {
-              // If permission is not granted (denied, unavailable) or if GPS already succeeded (this IP fetch was a redundant fallback)
-              // then the IP success message is the main one.
+              // Case 1: Permission is NOT 'granted' (e.g., 'denied', 'unavailable', 'initial', 'checking').
+              //         In this scenario, IP location is the best we can get, or it's an update to an existing IP location.
+              // Case 2: Permission IS 'granted', AND we ALREADY have a GPS location (userLocation.source === 'gps').
+              //         This IP fetch was likely an unnecessary fallback (if GPS is stable) or an enrichment that already happened.
+              //         The primary message should remain GPS-based if GPS was successful.
+              //         However, if GPS previously failed and this IP fetch is a fallback, this message is appropriate.
+              // Message: "Approximate location found ([City, Country] via [Service])."
               setLocationStatusMessage(ipLocationWithDetail.accuracyMessage);
           }
-          // If userLocation.source was already 'gps', this 'else' block means GPS failed and this is a fallback.
-          // The accuracyMessage will be set just to the IP success.
+          // Note on message overwriting: If userLocation.source was already 'gps' (e.g. GPS failed and this IP fetch is a fallback),
+          // the last condition `userLocation?.source === 'gps'` (evaluating true if GPS data exists, regardless of its success)
+          // ensures the IP accuracy message is set if this IP fetch is providing the current location.
+          // This is generally fine as the GPS error handler in fetchDeviceLocation would have already set a message indicating GPS failure.
       }
     } else {
       // Error fetching IP location
@@ -123,173 +134,216 @@ export function useLocationLogic() {
           failureMessage += ` (Network error. Check connection & console.)`; // Append network error detail
         }
 
-        // Check if we already have a usable IP location
+        // GPS Geolocation attempt failed.
+        // Check if we already have a usable IP-based location to use as a fallback.
         if (userLocation?.source === 'ip' && userLocation.accuracyMessage) {
+          // Yes, we have a prior IP location. Use it and inform the user.
           if (isDenied) {
+            // GPS denied by user, using existing IP data.
             failureMessage = `${uiStrings.locationPermissionDeniedUserMessage}. ${uiStrings.locationStatusPreciseDeniedUsingApproximate ? uiStrings.locationStatusPreciseDeniedUsingApproximate(userLocation.accuracyMessage) : `Using approximate: ${userLocation.accuracyMessage}`}.`;
-          } else { // Other GPS error
+          } else { // Other GPS error (e.g., timeout, unavailable), using existing IP data.
             failureMessage = `${uiStrings.locationErrorGeneral}. ${uiStrings.locationStatusPreciseFailedUsingApproximate ? uiStrings.locationStatusPreciseFailedUsingApproximate(userLocation.accuracyMessage) : `Using approximate: ${userLocation.accuracyMessage}`}.`;
           }
           setLocationStatusMessage(failureMessage);
-          setIsLoadingLocation(false); // We have an IP location to fall back on, so stop loading.
-          // Do not call fetchIpLocationData(false) here as we are using existing IP data.
+          setIsLoadingLocation(false); // Stop loading, as we are using the existing IP fallback.
+          // Do NOT call fetchIpLocationData(false) here, as we are relying on the IP data already fetched.
         } else {
-          // No prior IP location, or it wasn't successful. Set basic failure message.
+          // No prior IP location, or it wasn't successful (e.g. userLocation is null or IP fetch failed).
+          // Set a basic failure message based on GPS error, then attempt a new IP location fetch as a fallback.
           setLocationStatusMessage(failureMessage);
-          setIsLoadingLocation(false); // Stop loading, then try a fallback IP fetch.
-          fetchIpLocationData(false); // Attempt to get at least an IP location.
+          setIsLoadingLocation(false); // Stop loading from GPS attempt.
+          fetchIpLocationData(false); // Attempt to get at least an IP location. This will set isLoadingLocation true then false.
         }
       },
-      { enableHighAccuracy: false, timeout: 3000, maximumAge: GEOLOCATION_MAXIMUM_AGE_MS }
+      { enableHighAccuracy: false, timeout: 3000, maximumAge: GEOLOCATION_MAXIMUM_AGE_MS } // Options for GPS
     );
-  }, [uiStrings, fetchIpLocationData]);
+  }, [uiStrings, fetchIpLocationData, userLocation]); // Added userLocation to dependency array for reacting to changes in userLocation.accuracyMessage and source.
 
+  // Main effect for initializing location fetching and handling permission changes.
   useEffect(() => {
     let permissionStatusRef: PermissionStatus | null = null;
 
+    // Callback for when the browser's geolocation permission state changes AFTER initial query.
+    // This handles cases where the user changes permission from browser settings while the app is open.
     const handlePermissionChange = () => {
       if (permissionStatusRef) {
-        const newStatus = permissionStatusRef.state as LocationPermissionState;
-        setLocationPermission(newStatus); 
-        setIsLoadingLocation(true); // Assume loading will start due to permission change
+        const newBrowserStatus = permissionStatusRef.state as LocationPermissionState;
+        setLocationPermission(newBrowserStatus); // Update our local permission state.
+        setIsLoadingLocation(true); // Assume loading will start or continue due to permission change.
 
-        if (newStatus === 'granted') {
-            // User changed permission to granted
+        if (newBrowserStatus === 'granted') {
+            // Permission changed to 'granted' (e.g., user allowed it in browser settings after initially denying).
+            // Attempt to fetch precise device location and enrich with IP data.
             setLocationStatusMessage(uiStrings.locationStatusFetchingPrecise || uiStrings.locationStatusFetching);
             fetchDeviceLocation();
-            fetchIpLocationData(true); // Fetch IP for enrichment in parallel
-        } else if (newStatus === 'denied') {
-            // User changed permission to denied
+            fetchIpLocationData(true); // true for enrichment, in case GPS is slow or lacks city/country.
+        } else if (newBrowserStatus === 'denied') {
+            // Permission changed to 'denied'.
             if (userLocation?.source === 'ip' && userLocation.accuracyMessage) {
+                // If we already have an IP location, use that and inform the user they are now using approximate.
                 setLocationStatusMessage(`${uiStrings.locationPermissionDeniedUserMessage}. ${uiStrings.locationStatusPreciseDeniedUsingApproximate ? uiStrings.locationStatusPreciseDeniedUsingApproximate(userLocation.accuracyMessage) : `Using approximate: ${userLocation.accuracyMessage}`}.`);
-                setIsLoadingLocation(false); // We have IP, not fetching further.
+                setIsLoadingLocation(false); // Stop loading, using existing IP.
             } else {
+                // No IP location available, set denied message and attempt to fetch IP as a fallback.
                 setLocationStatusMessage(uiStrings.locationPermissionDeniedUserMessage);
-                fetchIpLocationData(false); // This will set isLoadingLocation(false)
+                fetchIpLocationData(false); // false for primary fetch. This will manage isLoadingLocation.
             }
-        } else if (newStatus === 'prompt'){
-            // User changed to prompt; clear location and show prompt message.
-            // The main useEffect logic would handle auto-fetching if the component re-evaluates.
-            // For now, similar to original logic but ensure loading is false.
+        } else if (newBrowserStatus === 'prompt'){
+            // Permission changed to 'prompt' (e.g., user reset it from 'denied' or 'granted').
+            // Clear current location and show a message prompting for interaction.
+            // The main effect logic (handleStatusBasedOnIp) will then call fetchDeviceLocation if this state is encountered on load.
+            // If changed while app is open, this prepares for a potential new fetch sequence.
             setLocationStatusMessage(uiStrings.locationPermissionPromptMessage);
-            setUserLocation(null); 
-            setIsLoadingLocation(false);
-        } else { // 'unavailable' or other states
+            setUserLocation(null); // Clear previous location as its source might no longer be valid.
+            setIsLoadingLocation(false); // Not actively loading until fetchDeviceLocation is called.
+        } else { // 'unavailable' or other states.
+            // This case handles if permission changes to 'unavailable' (e.g. location services disabled system-wide).
             if (userLocation?.source === 'ip' && userLocation.accuracyMessage) {
+                // GPS unavailable, but we have IP. Use IP.
                 setLocationStatusMessage(`${uiStrings.locationPermissionUnavailableUserMessage}. ${uiStrings.locationStatusPreciseUnavailableUsingApproximate ? uiStrings.locationStatusPreciseUnavailableUsingApproximate(userLocation.accuracyMessage) : `Using approximate: ${userLocation.accuracyMessage}`}.`);
-                setIsLoadingLocation(false); // We have IP, not fetching further.
+                setIsLoadingLocation(false); // Stop loading, using existing IP.
             } else {
+                // GPS unavailable and no IP data, set unavailable message and try fetching IP.
                 setLocationStatusMessage(uiStrings.locationPermissionUnavailableUserMessage);
-                fetchIpLocationData(false); // This will set isLoadingLocation(false)
+                fetchIpLocationData(false); // false for primary fetch. This will manage isLoadingLocation.
             }
         }
       }
     };
 
-    // Requirement 1: Initial Coarse Location (and handling for unsupported Permissions API)
+    // STEP 1: Handle cases where Permissions API is not supported by the browser.
+    // Default to 'unavailable' state and attempt IP-based location.
     if (!navigator.permissions || !navigator.permissions.query) {
-      console.warn("[Fedai Location Hook] Permissions API not supported. Assuming 'unavailable'.");
-      setLocationPermission('unavailable');
-      setIsLoadingLocation(true);
+      console.warn("[Fedai Location Hook] Permissions API not supported. Defaulting to 'unavailable' and attempting IP-based location.");
+      setLocationPermission('unavailable'); // Set local permission state
+      setIsLoadingLocation(true); // Start loading indicator
+      // Set status message indicating unavailability and attempt to fetch IP location
       setLocationStatusMessage(uiStrings.locationPermissionUnavailableUserMessage + " " + uiStrings.fetchingIpLocation);
-      fetchIpLocationData(false).finally(() => setIsLoadingLocation(false));
-      return;
+      // Fetch IP location data; this function will manage setIsLoadingLocation(false) upon completion/failure.
+      fetchIpLocationData(false);
+      return; // Exit useEffect as no further permission-based logic can run.
     }
 
-    // Start fetching IP location early.
-    setIsLoadingLocation(true);
-    // Use a more specific message for initial IP fetch.
+    // STEP 2: Start fetching IP-based location early (non-blocking).
+    // This provides a coarse location quickly or as a fallback.
+    setIsLoadingLocation(true); // Show loading indicator.
+    // Set initial status message indicating that an approximate location is being fetched.
     setLocationStatusMessage(uiStrings.locationStatusFetchingApproximate || uiStrings.fetchingIpLocation);
+    // Call fetchIpLocationData (false for primary fetch) and store the promise.
+    // This allows chaining further actions after IP fetch completes, without blocking permission query.
     const ipFetchPromise = fetchIpLocationData(false);
 
-    navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
-      permissionStatusRef = permissionStatus;
-      const currentStatus = permissionStatus.state as LocationPermissionState;
-      setLocationPermission(currentStatus); // Set permission state from query
+    // STEP 3: Query the browser's current geolocation permission status.
+    navigator.permissions.query({ name: 'geolocation' }).then((browserPermissionStatus) => {
+      permissionStatusRef = browserPermissionStatus; // Store reference for listening to changes.
+      const initialBrowserStatus = browserPermissionStatus.state as LocationPermissionState;
+      setLocationPermission(initialBrowserStatus); // Update local permission state with the queried status.
 
-      // Logic after permission query, potentially influenced by ipFetchPromise completion.
-      const handleStatusBasedOnIp = () => {
-        // This function is called after ipFetchPromise resolves or immediately if not waiting.
-        // isLoadingLocation is managed by individual fetch calls or final error states.
-        if (currentStatus === 'granted') {
-          setIsLoadingLocation(true); // Ensure loading for GPS attempt
-          // Message hierarchy:
-          // 1. Initial: "Fetching approximate..."
-          // 2. IP Success + Granted: "Approximate found. Fetching precise..." (set by fetchIpLocationData)
-          // 3. If IP not yet successful OR its message wasn't #2: "Fetching precise location..."
-          if (!(userLocation?.source === 'ip' && locationStatusMessage.includes(userLocation.accuracyMessage) && locationStatusMessage.includes(uiStrings.locationStatusFetching))) {
+      // STEP 4: Define logic to handle location fetching based on the initial permission status,
+      // potentially after the initial IP fetch attempt has completed.
+      const handleLocationFetchingBasedOnPermission = () => {
+        // This function is intended to be called after ipFetchPromise resolves or rejects.
+        // isLoadingLocation is managed by individual fetch calls (fetchDeviceLocation, fetchIpLocationData)
+        // or set explicitly in terminal error/unavailable states.
+
+        if (initialBrowserStatus === 'granted') {
+          // Permission is already granted.
+          setIsLoadingLocation(true); // Ensure loading indicator is active for GPS attempt.
+
+          // Determine appropriate status message:
+          // If IP fetch already succeeded and set a message like "Approximate found... Fetching precise...", keep it.
+          // Otherwise, set a generic "Fetching precise location..." message.
+          const ipMessageAlreadyShowsFetchingPrecise = userLocation?.source === 'ip' &&
+                                                   locationStatusMessage.includes(userLocation.accuracyMessage || '') &&
+                                                   locationStatusMessage.includes(uiStrings.locationStatusFetching);
+          if (!ipMessageAlreadyShowsFetchingPrecise) {
             setLocationStatusMessage(uiStrings.locationStatusFetchingPrecise || uiStrings.locationStatusFetching);
           }
-          fetchDeviceLocation();
-          fetchIpLocationData(true); // For enrichment
-        } else if (currentStatus === 'prompt') {
-          setIsLoadingLocation(true); // Ensure loading for GPS attempt via prompt
-          // Message hierarchy:
-          // 1. Initial: "Fetching approximate..."
-          // 2. IP Success + Prompt: "Approximate found. Please respond..." (set by fetchIpLocationData)
-          // 3. If IP not yet successful OR its message wasn't #2: "Attempting to auto-fetch..."
-          if (!(userLocation?.source === 'ip' && locationStatusMessage.includes(userLocation.accuracyMessage) && locationStatusMessage.includes(uiStrings.locationPermissionPromptMessage))) {
+
+          fetchDeviceLocation(); // Attempt to get precise device location.
+          fetchIpLocationData(true); // Fetch IP data for enrichment (e.g., city/country for GPS coords).
+
+        } else if (initialBrowserStatus === 'prompt') {
+          // Permission is 'prompt', meaning the user will be asked by the browser.
+          setIsLoadingLocation(true); // Ensure loading indicator for this phase.
+
+          // Determine appropriate status message:
+          // If IP fetch already succeeded and set "Approximate found... Please respond...", keep it.
+          // Otherwise, set "Attempting to automatically fetch location..."
+          const ipMessageAlreadyShowsPromptInteraction = userLocation?.source === 'ip' &&
+                                                      locationStatusMessage.includes(userLocation.accuracyMessage || '') &&
+                                                      locationStatusMessage.includes(uiStrings.locationPermissionPromptMessage);
+          if (!ipMessageAlreadyShowsPromptInteraction) {
             setLocationStatusMessage(uiStrings.locationStatusAttemptingAutoFetch || uiStrings.locationPermissionPromptMessage);
           }
-          fetchDeviceLocation(); // Triggers prompt
-        } else if (currentStatus === 'denied') {
-          // IP fetch has run. Its success/failure message (possibly combined) should be set by fetchIpLocationData.
-          // If fetchIpLocationData hasn't finished or set a message, use a generic one.
+
+          fetchDeviceLocation(); // This call will trigger the browser's permission prompt.
+                                 // IP data for enrichment will be handled by fetchDeviceLocation's success/error callbacks.
+
+        } else if (initialBrowserStatus === 'denied') {
+          // Permission is 'denied'. User has explicitly blocked location access.
+          // The ipFetchPromise has already run. fetchIpLocationData handles setting isLoadingLocation(false).
+          // It also sets a message like "Permission denied. Using approximate..." if IP was found,
+          // or "Permission denied. IP location failed..." if IP fetch also failed.
+          // If ipFetchPromise hasn't set a message yet (e.g., it's still running somehow, though unlikely here),
+          // set a base message.
           if (!locationStatusMessage.includes(uiStrings.locationPermissionDeniedUserMessage)) {
-             const baseMsg = userLocation?.source === 'ip' ? userLocation.accuracyMessage : (uiStrings.locationStatusFetchingApproximate || uiStrings.fetchingIpLocation);
-             setLocationStatusMessage(`${uiStrings.locationPermissionDeniedUserMessage}. ${baseMsg}`);
+             const fallbackMessageBase = userLocation?.source === 'ip' ? (userLocation.accuracyMessage || '') : (uiStrings.locationStatusFetchingApproximate || uiStrings.fetchingIpLocation);
+             setLocationStatusMessage(`${uiStrings.locationPermissionDeniedUserMessage}. ${fallbackMessageBase}`);
           }
-          // fetchIpLocationData will call setIsLoadingLocation(false)
-        } else { // 'unavailable' or other states
+          // isLoadingLocation will be managed by the ipFetchPromise completion.
+
+        } else { // 'unavailable' or other states from permission query.
+          // Location services might be unavailable on the device, or another error occurred during permission query.
+          // Similar to 'denied', ipFetchPromise has run.
+          // If ipFetchPromise hasn't set a message:
           if (!locationStatusMessage.includes(uiStrings.locationPermissionUnavailableUserMessage)) {
-            const baseMsg = userLocation?.source === 'ip' ? userLocation.accuracyMessage : (uiStrings.locationStatusFetchingApproximate || uiStrings.fetchingIpLocation);
-            setLocationStatusMessage(`${uiStrings.locationPermissionUnavailableUserMessage}. ${baseMsg}`);
+            const fallbackMessageBase = userLocation?.source === 'ip' ? (userLocation.accuracyMessage || '') : (uiStrings.locationStatusFetchingApproximate || uiStrings.fetchingIpLocation);
+            setLocationStatusMessage(`${uiStrings.locationPermissionUnavailableUserMessage}. ${fallbackMessageBase}`);
           }
-          // fetchIpLocationData will call setIsLoadingLocation(false)
+          // isLoadingLocation will be managed by the ipFetchPromise completion.
         }
       };
 
-      // We don't want to block permission handling on IP fetch, but message setting might depend on it.
-      // The modified fetchIpLocationData tries to set context-aware messages.
-      // The logic here is a fallback or refiner for those messages.
-      // No need for ipFetchPromise.finally to manage isLoadingLocation here, individual fetches do that.
-      ipFetchPromise.then(handleStatusBasedOnIp).catch(handleStatusBasedOnIp); // Run regardless of IP fetch outcome initially.
+      // Execute the location fetching logic after the initial IP fetch attempt.
+      // This ensures that IP data (or failure thereof) is potentially available when deciding further actions.
+      // Using .then().catch() ensures handleLocationFetchingBasedOnPermission runs regardless of ipFetchPromise outcome.
+      ipFetchPromise.then(handleLocationFetchingBasedOnPermission).catch(handleLocationFetchingBasedOnPermission);
 
-      permissionStatus.onchange = handlePermissionChange;
+      // STEP 5: Listen for subsequent changes to the permission status.
+      browserPermissionStatus.onchange = handlePermissionChange;
+
     }).catch((err) => {
+        // Error occurred during navigator.permissions.query itself.
         console.error('[Fedai Location Hook] Error querying geolocation permission:', err);
-        setLocationPermission('unavailable');
-        // IP fetch might be ongoing or finished.
-        // Set a generic error and let IP fetch's own error handling take over if it also fails.
+        setLocationPermission('unavailable'); // Assume unavailable if query fails.
+
+        // Set a generic error message. The ipFetchPromise might still be running or might have completed.
+        // If ipFetchPromise also fails, its error message might overwrite this one, which is acceptable.
         setLocationStatusMessage(uiStrings.locationPermissionUnavailableUserMessage + " " + (uiStrings.locationErrorGeneral || "Could not query permission."));
+
+        // Ensure isLoadingLocation is eventually set to false if ipFetchPromise also fails or has failed.
         ipFetchPromise.finally(() => {
-            // Ensure loading is false if both permission query and IP fetch fail.
-            // If IP fetch is still running, it will manage its own isLoadingLocation.
-            // If it already failed, this ensures it's false.
-            if (isLoadingLocation) setIsLoadingLocation(false);
+            if (isLoadingLocation) setIsLoadingLocation(false); // Only set if still true.
         });
     });
     
+    // Cleanup function for the useEffect hook.
     return () => {
       if (permissionStatusRef) {
+        // Remove the event listener when the component unmounts or dependencies change.
         permissionStatusRef.onchange = null;
       }
     };
-  }, [uiStrings, fetchDeviceLocation, fetchIpLocationData, userLocation?.source]); // Changed userLocation to userLocation.source
+  }, [uiStrings, fetchDeviceLocation, fetchIpLocationData, userLocation?.source]);
+  // userLocation?.source is used to re-evaluate if the source of location changes (e.g. from IP to GPS),
+  // though the primary permission flow is init-once or via direct permission status changes.
   
-  const requestLocationPermission = useCallback(() => {
-    setLocationPermission('checking'); 
-    setLocationStatusMessage(uiStrings.locationStatusFetching);
-    fetchDeviceLocation();
-    fetchIpLocationData(true); // Fetch IP for enrichment in parallel
-  }, [uiStrings.locationStatusFetching, fetchDeviceLocation, fetchIpLocationData]);
-
   return {
     userLocation,
     locationPermission,
     locationStatusMessage,
     isLoadingLocation,
-    requestLocationPermission,
     fetchIpLocationData, 
   };
 }

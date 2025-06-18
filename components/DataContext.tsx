@@ -8,7 +8,6 @@ interface DataContextType {
   locationPermission: string;
   locationStatusMessage: string;
   isLoadingLocation: boolean;
-  requestLocationPermission: () => void;
   weatherData: WeatherData | null;
   isLoadingWeather: boolean;
   environmentalData: EnvironmentalData | null;
@@ -29,7 +28,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     locationPermission,
     locationStatusMessage,
     isLoadingLocation,
-    requestLocationPermission,
   } = useLocationLogic();
 
   const {
@@ -52,7 +50,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     locationPermission,
     locationStatusMessage,
     isLoadingLocation,
-    requestLocationPermission,
     weatherData,
     isLoadingWeather,
     environmentalData,
