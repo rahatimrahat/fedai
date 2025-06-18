@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useDataContext } from './DataContext.tsx';
+import { useDataContext, UserLocation } from './DataContext.tsx'; // Added UserLocation for type clarity if needed, though not strictly for this change
 import { useLocalizationContext } from './LocalizationContext.tsx';
 import { MapPinIcon, InformationCircleIcon } from '@/components/icons';
 import LoadingSpinner from './ui/LoadingSpinner.tsx'; // Updated path
@@ -11,6 +11,7 @@ const LocationSection: React.FC = () => {
     locationPermission,
     locationStatusMessage,
     isLoadingLocation,
+    userLocation, // Destructure userLocation
     requestLocationPermission,
   } = useDataContext();
   const { uiStrings } = useLocalizationContext();
@@ -59,6 +60,13 @@ const LocationSection: React.FC = () => {
           */}
           {isLoadingLocation && locationPermission !== 'prompt' && <LoadingSpinner className="w-4 h-4 inline mr-2" />}
           <span>{locationStatusMessage}</span>
+          {/* Conditional span for additional feedback on location determination failure */}
+          {!isLoadingLocation && userLocation === null && (locationStatusMessage === uiStrings.locationErrorGeneral || (locationStatusMessage && locationStatusMessage.includes(uiStrings.ipLocationFailed))) && (
+            <span className="block mt-1 text-xs text-[var(--text-accent)]">
+              {/* TODO: Replace with uiStrings.locationUnavailableForAppExplanation */}
+              This means the app cannot provide location-specific information.
+            </span>
+          )}
         </div>
       )}
     </section>
