@@ -38,26 +38,25 @@ const LocationSection: React.FC = () => {
           </Tooltip>
         </h2>
       </div>
-      {locationPermission === 'prompt' && (
-        <div className="space-y-4">
-          <p className="location-prompt-card text-sm p-4 rounded-md">{uiStrings.locationPermissionPromptMessage}</p>
-          <button
-            onClick={requestLocationPermission}
-            className="btn btn-primary w-full text-sm py-2.5"
-            disabled={isLoadingLocation}
-            aria-label={uiStrings.requestLocationPermissionButton}
-          >
-            {isLoadingLocation ? <LoadingSpinner className="w-4 h-4 inline mr-2" /> : null}
-            {uiStrings.requestLocationPermissionButton}
-          </button>
-        </div>
-      )}
+      {/*
+        The button and specific message for 'prompt' state are removed.
+        The component now relies on locationStatusMessage from the context
+        to inform the user about automatic location fetching attempts.
+      */}
       {locationStatusMessage && (
          <div 
            className={`text-sm p-1 ${determineLocationMessageColor()} flex items-center`}
            aria-live="polite"
            aria-atomic="true"
          >
+          {/*
+            The condition for the spinner is kept as is.
+            When locationPermission is 'prompt', isLoadingLocation will be true due to automatic fetching,
+            and locationStatusMessage will display "Attempting to automatically fetch..." or similar.
+            If a spinner is desired *specifically next to this message* during 'prompt',
+            the condition `locationPermission !== 'prompt'` would need adjustment.
+            For now, the global loading state handled by isLoadingLocation should be sufficient.
+          */}
           {isLoadingLocation && locationPermission !== 'prompt' && <LoadingSpinner className="w-4 h-4 inline mr-2" />}
           <span>{locationStatusMessage}</span>
         </div>
