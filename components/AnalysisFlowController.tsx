@@ -47,6 +47,7 @@ const AnalysisFlowController: React.FC = () => {
   const pipelineModalContentRef = useRef<HTMLDivElement>(null);
   const followUpSectionRef = useRef<HTMLDivElement>(null);
   const contextualDataGroupRef = useRef<HTMLDivElement>(null); 
+  const resultsSectionRef = useRef<HTMLDivElement>(null); // Ref for disease results section
 
   const showContextualSections = !!imageFile; 
 
@@ -81,6 +82,13 @@ const AnalysisFlowController: React.FC = () => {
     'textarea',
     150
   );
+
+  // useEffect for scrolling to results section
+  useEffect(() => {
+    if (diseaseInfo && !isLoadingAnalysis && resultsSectionRef.current) {
+      resultsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [diseaseInfo, isLoadingAnalysis]);
 
 
   return (
@@ -165,14 +173,15 @@ const AnalysisFlowController: React.FC = () => {
       )}
       
       {diseaseInfo && !isLoadingAnalysis && (
-        <BounceIn className="mt-8">
-          <MemoizedDiseaseResultCard result={diseaseInfo} />
-          
-          {diseaseInfo.followUpQuestion && (
-            <div ref={followUpSectionRef} className="card mt-6 p-6 bg-glass space-y-4"> 
-              <h3 className="text-xl font-semibold text-[var(--text-headings)] flex items-center">
-                <ChatBubbleLeftRightIcon className="w-6 h-6 mr-2.5 text-[var(--accent-teal)]" /> 
-                {uiStrings.followUpQuestionLabel}
+        <div ref={resultsSectionRef} className="mt-8"> {/* Attach ref and move className */}
+          <BounceIn>
+            <MemoizedDiseaseResultCard result={diseaseInfo} />
+
+            {diseaseInfo.followUpQuestion && (
+              <div ref={followUpSectionRef} className="card mt-6 p-6 bg-glass space-y-4">
+                <h3 className="text-xl font-semibold text-[var(--text-headings)] flex items-center">
+                  <ChatBubbleLeftRightIcon className="w-6 h-6 mr-2.5 text-[var(--accent-teal)]" />
+                  {uiStrings.followUpQuestionLabel}
               </h3>
               <p className="text-[var(--text-primary)] text-base leading-relaxed">{diseaseInfo.followUpQuestion}</p>
               <textarea
@@ -193,7 +202,8 @@ const AnalysisFlowController: React.FC = () => {
               </button>
             </div>
           )}
-        </BounceIn>
+          </BounceIn>
+        </div>
       )}
     </div>
   );
