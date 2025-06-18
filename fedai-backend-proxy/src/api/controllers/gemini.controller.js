@@ -58,7 +58,7 @@ ${currentTaskInstruction}
       const contents = { parts: [imagePart] }; // Text prompt is now part of systemInstruction
 
       const geminiResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview-04-17',
+        model: 'gemini-2.5-flash',
         contents: contents,
         config: { 
             responseMimeType: "application/json",
@@ -127,7 +127,7 @@ ${currentTaskInstruction}
     try {
       // Using a minimal prompt and config for status check
       await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview-04-17',
+        model: 'gemini-2.5-flash',
         contents: "Test", // Shortest possible content
         config: { 
             responseMimeType: "text/plain", // Expect plain text

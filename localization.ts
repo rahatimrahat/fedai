@@ -268,6 +268,11 @@ const UI_STRINGS_TR: UiStrings = {
   weatherDataUnavailableNoLocation: "Konum bilgisi olmadan hava durumu verileri alınamıyor.",
   currentWeatherInfoUnavailable: "Anlık hava durumu bilgisi alınamadı.",
   envDataUnavailableNoLocation: "Konum bilgisi olmadan çevre verileri alınamıyor.",
+  soilDataProxyStructureError: "Sunucudan gelen toprak verileri beklenmedik bir formatta olduğu için işlenemedi. Lütfen daha sonra tekrar deneyin.",
+  soilDataProxyInternalError: "Toprak verileri alınırken bir sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.",
+  soilDataServiceGeneralError: "Şu anda toprak verileri alınamadı. Lütfen konumunuzun doğru olduğundan emin olun ve tekrar deneyin.",
+  locationAllServicesFailed: "Tüm kullanılabilir yöntemlerle (GPS ve IP tabanlı) konumunuz belirlenemedi. Analiz sınırlı veya daha az doğru olabilir.",
+  soilDataNotAvailableForLocationTitle: "Bu özel konum için toprak verisi mevcut değil.",
   ...PIPELINE_UI_STRINGS_INTERNAL[LanguageCode.TR],
 };
 
@@ -472,6 +477,11 @@ const UI_STRINGS_EN: UiStrings = {
   weatherDataUnavailableNoLocation: "Weather data cannot be fetched without location information.",
   currentWeatherInfoUnavailable: "Current weather information could not be retrieved.",
   envDataUnavailableNoLocation: "Environmental data cannot be fetched without location information.",
+  soilDataProxyStructureError: "Could not process soil data from the server due to an unexpected format. Please try again later.",
+  soilDataProxyInternalError: "A server error occurred while fetching soil data. Please try again later.",
+  soilDataServiceGeneralError: "Could not retrieve soil data at this time. Please ensure your location is accurate and try again.",
+  locationAllServicesFailed: "Unable to determine your location using all available methods (GPS and IP-based). Analysis may be limited or less accurate.",
+  soilDataNotAvailableForLocationTitle: "Soil data is not available for this specific location.",
   ...PIPELINE_UI_STRINGS_INTERNAL[LanguageCode.EN],
 };
 

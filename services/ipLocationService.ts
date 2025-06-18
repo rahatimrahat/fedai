@@ -17,6 +17,7 @@ interface IpLocationFetchResult {
 }
 
 async function fetchIpLocationViaProxy(): Promise<IpLocationFetchResult> {
+  console.log('[FedaiDebug] fetchIpLocationViaProxy: Attempting to fetch from /api/ip-location');
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), SERVICE_TEST_TIMEOUT_MS + 2000); 
@@ -35,6 +36,7 @@ async function fetchIpLocationViaProxy(): Promise<IpLocationFetchResult> {
     const data = await response.json();
 
     if (data.latitude && data.longitude) {
+      console.log('[FedaiDebug] fetchIpLocationViaProxy: Success', data);
       return {
         location: {
           latitude: data.latitude,
@@ -48,7 +50,7 @@ async function fetchIpLocationViaProxy(): Promise<IpLocationFetchResult> {
         serviceName: data.serviceName || 'proxy',
       };
     } else {
-      // console.warn('Proxy IP location call failed or returned no location:', data.error);
+      console.warn('[FedaiDebug] fetchIpLocationViaProxy: Proxy returned no location data or error field', data);
       return { location: null, serviceName: null, error: data.error || 'Proxy returned no IP location data.' };
     }
   } catch (error) {
@@ -63,7 +65,7 @@ async function fetchIpLocationViaProxy(): Promise<IpLocationFetchResult> {
     } else {
         errorMessage = String(error);
     }
-    // console.error(`Error fetching from IP location proxy: ${errorMessage}. Original error object:`, error);
+    console.error('[FedaiDebug] fetchIpLocationViaProxy: Error - ', errorMessage, 'Original Error:', error);
     return { location: null, serviceName: null, error: errorMessage };
   }
 }

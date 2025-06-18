@@ -63,27 +63,70 @@ export function useContextualData(userLocation: UserLocation | null) {
         const elevPromise = fetchElevation(userLocation);
         const soilPromise = fetchSoilData(userLocation);
 
-        const envPromise = Promise.all([elevPromise, soilPromise]).then(([elevation, soil]) => {
-            const envDataToSet: EnvironmentalData = { dataTimestamp: new Date().toISOString(), errorKey: null };
-            if (elevation) envDataToSet.elevation = elevation;
-            if (soil) {
-                envDataToSet.soilPH = soil.soilPH;
-                envDataToSet.soilOrganicCarbon = soil.soilOrganicCarbon;
-                envDataToSet.soilCEC = soil.soilCEC;
-                envDataToSet.soilNitrogen = soil.soilNitrogen;
-                envDataToSet.soilSand = soil.soilSand;
-                envDataToSet.soilSilt = soil.soilSilt;
-                envDataToSet.soilClay = soil.soilClay;
-                envDataToSet.soilAWC = soil.soilAWC;
+        const envPromise = Promise.all([elevPromise, soilPromise]).then(([elevation, soilDataResult]) => {
+            const envDataToSet: EnvironmentalData = { dataTimestamp: new Date().toISOString(), errorKey: null, source: undefined };
+
+            if (elevation) envDataToSet.elevation = elevation; // Assuming elevation is simpler and directly returns data or throws
+
+            // Handle soil data and potential errors from fetchSoilData
+            if (soilDataResult) {
+                if (soilDataResult.error) {
+                    // Handle structured error from soil service (as returned by proxy)
+                    console.warn("useContextualData: Soil data fetch returned an error object:", soilDataResult.error);
+                    if (soilDataResult.error.source === 'SoilGrids (NoDataAtLocation)') {
+                        envDataToSet.errorKey = 'soilDataNotAvailableForLocationTitle';
+                        envDataToSet.source = 'SoilGrids (NoDataAtLocation)'; // Set source for specific message display
+                    } else if (soilDataResult.error.source === 'SoilGridsProxyStructureError') {
+                        envDataToSet.errorKey = 'soilDataProxyStructureError';
+                    } else if (soilDataResult.error.source === 'SoilGridsProxyInternalError') {
+                        envDataToSet.errorKey = 'soilDataProxyInternalError';
+                    } else {
+                        envDataToSet.errorKey = 'soilDataServiceGeneralError'; // Fallback for other soil-related errors
+                    }
+                } else if (Object.keys(soilDataResult).length === 0 && !envDataToSet.errorKey) {
+                    // Soil data is empty but no specific error was reported from proxy (e.g. SoilGrids had no data for properties)
+                    // This might not be an "error" but rather "no data".
+                    // For now, let's not set an errorKey here, allow individual properties to be null.
+                    // The UI can then display "N/A" for those properties.
+                    // If elevation also failed, a general error will be set below.
+                } else if (Object.keys(soilDataResult).length > 0) {
+                     // No error, and soilDataResult has properties
+                    envDataToSet.soilPH = soilDataResult.soilPH;
+                    envDataToSet.soilOrganicCarbon = soilDataResult.soilOrganicCarbon;
+                    envDataToSet.soilCEC = soilDataResult.soilCEC;
+                    envDataToSet.soilNitrogen = soilDataResult.soilNitrogen;
+                    envDataToSet.soilSand = soilDataResult.soilSand;
+                    envDataToSet.soilSilt = soilDataResult.soilSilt;
+                    envDataToSet.soilClay = soilDataResult.soilClay;
+                    envDataToSet.soilAWC = soilDataResult.soilAWC;
+                    envDataToSet.source = soilDataResult.source; // e.g. 'SoilGrids'
+                }
             }
-            if (!elevation && (!soil || Object.keys(soil).length === 0)) {
+
+            // General check if overall no useful environmental data was fetched
+            if (!elevation && (!soilDataResult || soilDataResult.error || Object.keys(soilDataResult).filter(k => k !== 'error' && k !== 'source').length === 0) && !envDataToSet.errorKey) {
+                 // If no elevation, AND (no soil data OR soil data had an error OR soil data was empty), AND no specific soil error key was already set
                 envDataToSet.errorKey = 'environmentalDataUnavailable';
             }
-            // error field will be populated by the effect below based on errorKey
+
             setEnvironmentalData(prev => ({...prev, ...envDataToSet}));
         }).catch(err => {
-            console.error("Environmental data fetch error in useContextualData:", err);
-            setEnvironmentalData({ errorKey: 'environmentalDataUnavailable', dataTimestamp: new Date().toISOString() });
+            // This catch is for errors like network failure when calling the proxy,
+            // or if fetchElevation/fetchSoilData throw an unhandled exception directly.
+            console.error("Environmental data promise chain error in useContextualData:", err);
+            // Attempt to check if the error object has a source from our proxy structure
+            const source = err.source;
+            let errorKeyToSet = 'environmentalDataUnavailable'; // Default
+            if (source === 'SoilGrids (NoDataAtLocation)') {
+                errorKeyToSet = 'soilDataNotAvailableForLocationTitle';
+            } else if (source === 'SoilGridsProxyStructureError') {
+                errorKeyToSet = 'soilDataProxyStructureError';
+            } else if (source === 'SoilGridsProxyInternalError') {
+                errorKeyToSet = 'soilDataProxyInternalError';
+            } else if (err.message && err.message.toLowerCase().includes('failed to fetch')) { // robustFetch might throw this
+                 errorKeyToSet = 'soilDataServiceGeneralError'; // Or a more generic network error string
+            }
+            setEnvironmentalData({ errorKey: errorKeyToSet, dataTimestamp: new Date().toISOString(), source: source });
         }).finally(() => setIsLoadingEnvironmental(false));
 
         await Promise.allSettled([weatherPromise, envPromise]);

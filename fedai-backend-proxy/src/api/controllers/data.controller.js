@@ -220,7 +220,7 @@ const getElevationData = async (req, res) => {
 // --- Soil Data Controller ---
 const getSoilData = async (req, res) => {
     const { latitude, longitude } = req.body;
-    // console.log(`Received request for /api/soil for lat: ${latitude}, lon: ${longitude}`);
+    console.log('[FedaiDebug-Soil] getSoilData: Received request for lat:', latitude, 'lon:', longitude);
     if (latitude === undefined || longitude === undefined) {
         return res.status(400).json({ error: 'Latitude and longitude are required.' });
     }
@@ -229,9 +229,16 @@ const getSoilData = async (req, res) => {
     const depths = '0-5cm';
     const valueType = 'mean';
     const soilGridsApiUrl = `${SOILGRIDS_API_URL_PREFIX}?lon=${longitude}&lat=${latitude}&property=${properties}&depth=${depths}&value=${valueType}`;
+    console.log('[FedaiDebug-Soil] getSoilData: Calling SoilGrids API URL:', soilGridsApiUrl);
     
     try {
         const data = await robustFetch(soilGridsApiUrl, {}, GEOLOCATION_API_TIMEOUT_MS + 6000);
+        console.log('[FedaiDebug-Soil] getSoilData: Raw data from SoilGrids:', JSON.stringify(data, null, 2));
+
+        if (!data || !data.properties || !data.properties.layers) {
+            console.warn('[FedaiDebug-Soil] getSoilData: SoilGrids response lacks expected properties.layers structure. Data:', JSON.stringify(data, null, 2));
+            throw new Error('SoilGrids response structure_invalid');
+        }
         
         const soilProps = {};
         let wv0033_value = null;
@@ -281,11 +288,18 @@ const getSoilData = async (req, res) => {
             }
         }
     } catch (error) {
-        // console.error(`Error in /api/soil proxy for ${latitude},${longitude}:`, error);
+        console.error('[FedaiDebug-Soil] getSoilData: Error caught! Message:', error.message, 'Full error object (stack might be more useful):', error.stack);
+        // Note: JSON.stringify(error) doesn't typically serialize message, name, stack for native Error objects.
+        // error.message and error.stack (logged above) are generally more informative.
+
         if (error.message && (error.message.includes('status: 404') || error.message.includes('No data at location'))) {
             res.json({ source: 'SoilGrids (NoDataAtLocation)' });
+        } else if (error.message === 'SoilGrids response structure_invalid') {
+            res.status(502).json({ error: 'Failed to process SoilGrids response due to unexpected data structure.', source: 'SoilGridsProxyStructureError' });
         } else {
-            res.status(500).json({ error: error.message || 'Failed to fetch soil data from SoilGrids.' });
+            // For other errors, including those from robustFetch (timeout, network error)
+            // or unexpected errors during processing.
+            res.status(500).json({ error: 'Proxy error fetching or processing soil data: ' + error.message, source: 'SoilGridsProxyInternalError' });
         }
     }
 };
