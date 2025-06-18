@@ -264,9 +264,14 @@ const getSoilData = async (req, res) => {
             // So, ( (wv0033/100) - (wv1500/100) ) * 50mm
             // = (wv0033 - wv1500) / 100 * 50
             // = (wv0033 - wv1500) / 2
-            // The original calculation was (wv0033_value - wv1500_value) / 20. This might be if the values were scaled by 1000 instead of 100.
-            // Let's assume the original factor of /20 implies the values are in per mille (‰) or some other unit.
-            // Sticking to the original calculation /20 for consistency with existing frontend.
+            // The original calculation was (wv0033_value - wv1500_value) / 20.
+            // This implies that the SoilGrids wv values (wv0033_value, wv1500_value) are volumetric water content (cm³/cm³) scaled by 1000 (i.e., in permille).
+            // The AWC (Available Water Capacity) is then calculated for a 5cm (50mm) soil layer depth.
+            // Derivation:
+            // AWC (mm) = ( (wv0033_value / 1000) - (wv1500_value / 1000) ) * 50mm layer_depth
+            // AWC (mm) = (wv0033_value - wv1500_value) / 1000 * 50
+            // AWC (mm) = (wv0033_value - wv1500_value) / 20
+            // Sticking to this original calculation /20 for consistency with existing frontend.
             soilProps.soilAWC = `${((wv0033_value - wv1500_value) / 20).toFixed(1)} mm`;
         }
 
