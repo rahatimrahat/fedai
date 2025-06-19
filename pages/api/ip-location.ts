@@ -17,6 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // --- Primary Service Call (ipapi.co) ---
   try {
+// refactor/location-processing-improvements
     // ipapi.co uses the caller's IP address if no IP is specified in the path.
     // For a Next.js API route, this will be the user's IP or a close proxy.
     // If we needed to specify an IP: const primaryUrl = `https://ipapi.co/${ip}/json/`;
@@ -104,5 +105,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
       });
     }
+//
+    // TODO: Use an environment variable for the proxy URL in a production setup
+    const proxyRes = await fetch('http://localhost:3001/api/ip-location', {
+      method: 'GET',
+      headers: {
+        // Forward necessary headers if any. For now, let's assume User-Agent is handled by the proxy or not strictly needed.
+        // 'User-Agent': req.headers['user-agent'] || 'Next.js API Route',
+      },
+    });
+
+    if (!proxyRes.ok) {
+      // If the proxy server responded with an error, forward that status and message
+      const errorData = await proxyRes.json().catch(() => ({ error: 'Proxy server returned an error' }));
+      res.status(proxyRes.status).json(errorData);
+      return;
+    }
+
+    const data = await proxyRes.json();
+    // Assuming the proxy returns data in the expected format
+    // If the proxy already formats it to match IpLocationFetchResult, this is fine.
+    // Otherwise, mapping might be needed here.
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Error calling IP location proxy:', error);
+    res.status(500).json({ error: 'Failed to fetch IP location via proxy' });
+// main
   }
 }
