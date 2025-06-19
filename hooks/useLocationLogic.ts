@@ -33,6 +33,7 @@ export function useLocationLogic() {
     
     const { location, serviceName, error } = await fetchIpLocation();
     if (location && serviceName) {
+      console.log(`// DEBUG_LOG: IP Fetch Success - isEnrichmentOnly: ${isEnrichmentOnly}, location: ${JSON.stringify(location)}`); // DEBUG_LOG
       const ipLocationWithDetail: UserLocation = {
         ...location, 
         accuracyMessage: uiStrings.locationStatusSuccessIp(location.city || 'Unknown City', location.country || 'Unknown Country', serviceName)
@@ -79,6 +80,10 @@ export function useLocationLogic() {
       }
     } else {
       // Error fetching IP location
+      console.log(`// DEBUG_LOG: IP Fetch Error - isEnrichmentOnly: ${isEnrichmentOnly}, error: ${error}`); // DEBUG_LOG
+      if (!isEnrichmentOnly) {
+        setUserLocation(null); // Explicitly set to null on primary fetch failure
+      }
       let baseErrorMessage = uiStrings.locationErrorGeneral;
       if (error && error.toLowerCase().includes('failed to fetch')) {
         baseErrorMessage = `${uiStrings.ipLocationFailed} ${uiStrings.locationErrorGeneral.toLowerCase().replace('could not determine location. p', 'P')} Please check your network settings and browser console for more details.`;
@@ -124,6 +129,7 @@ export function useLocationLogic() {
         }
       },
       (error) => {
+        console.log(`// DEBUG_LOG: GPS Error - Code: ${error.code}, Message: ${error.message}. Attempting IP fallback if needed.`); // DEBUG_LOG
         console.error('[Fedai Location Hook] navigator.geolocation.getCurrentPosition error. Code:', error.code, 'Message:', error.message);
         const isDenied = error.code === error.PERMISSION_DENIED;
         const newPermissionState = isDenied ? 'denied' : 'unavailable';
@@ -147,15 +153,17 @@ export function useLocationLogic() {
           setLocationStatusMessage(failureMessage);
           setIsLoadingLocation(false); // Stop loading, as we are using the existing IP fallback.
           // Do NOT call fetchIpLocationData(false) here, as we are relying on the IP data already fetched.
+          console.log(`// DEBUG_LOG: GPS Error - Using existing IP. Final userLocation: ${JSON.stringify(userLocation)}, isLoading: false, statusMsg: "${failureMessage}"`); // DEBUG_LOG
         } else {
           // No prior IP location, or it wasn't successful (e.g. userLocation is null or IP fetch failed).
           // Set a basic failure message based on GPS error, then attempt a new IP location fetch as a fallback.
-          setLocationStatusMessage(failureMessage);
+          setLocationStatusMessage(failureMessage); // Set message before IP fallback
           setIsLoadingLocation(false); // Stop loading from GPS attempt.
+          console.log(`// DEBUG_LOG: GPS Error - No usable prior IP. statusMsg: "${failureMessage}". Calling fetchIpLocationData(false).`); // DEBUG_LOG
           fetchIpLocationData(false); // Attempt to get at least an IP location. This will set isLoadingLocation true then false.
         }
       },
-      { enableHighAccuracy: false, timeout: 3000, maximumAge: GEOLOCATION_MAXIMUM_AGE_MS } // Options for GPS
+      { enableHighAccuracy: false, timeout: GEOLOCATION_HIGH_ACCURACY_TIMEOUT_MS, maximumAge: GEOLOCATION_MAXIMUM_AGE_MS } // Options for GPS
     );
   }, [uiStrings, fetchIpLocationData, userLocation]); // Added userLocation to dependency array for reacting to changes in userLocation.accuracyMessage and source.
 
@@ -316,7 +324,9 @@ export function useLocationLogic() {
     }).catch((err) => {
         // Error occurred during navigator.permissions.query itself.
         console.error('[Fedai Location Hook] Error querying geolocation permission:', err);
+        console.log(`// DEBUG_LOG: Permissions query error - Error: ${err}`); // DEBUG_LOG
         setLocationPermission('unavailable'); // Assume unavailable if query fails.
+        setUserLocation(null); // Explicitly set to null
 
         // Set a generic error message. The ipFetchPromise might still be running or might have completed.
         // If ipFetchPromise also fails, its error message might overwrite this one, which is acceptable.
@@ -324,7 +334,12 @@ export function useLocationLogic() {
 
         // Ensure isLoadingLocation is eventually set to false if ipFetchPromise also fails or has failed.
         ipFetchPromise.finally(() => {
-            if (isLoadingLocation) setIsLoadingLocation(false); // Only set if still true.
+            // isLoadingLocation state here might be stale due to closure.
+            // fetchIpLocationData itself handles setting it to false.
+            // If it was already false, this is a no-op. If it was true and ipFetchPromise failed early,
+            // this ensures it's false.
+            setIsLoadingLocation(false);
+            console.log(`// DEBUG_LOG: Permissions query error - IP Fetch Promise finally block. Current isLoading: ${isLoadingLocation}`); // DEBUG_LOG
         });
     });
     
@@ -339,6 +354,11 @@ export function useLocationLogic() {
   // userLocation?.source is used to re-evaluate if the source of location changes (e.g. from IP to GPS),
   // though the primary permission flow is init-once or via direct permission status changes.
   
+  // DEBUG_LOG: Effect for logging final location state changes
+  useEffect(() => {
+    console.log(`// DEBUG_LOG: State Change - userLocation: ${JSON.stringify(userLocation)}, isLoading: ${isLoadingLocation}, statusMsg: "${locationStatusMessage}", permission: "${locationPermission}"`);
+  }, [userLocation, isLoadingLocation, locationStatusMessage, locationPermission]);
+
   return {
     userLocation,
     locationPermission,
