@@ -1,0 +1,33 @@
+# Ignore Node.js dependencies
+node_modules/
+
+# Ignore .env files as they might contain sensitive credentials
+.env
+.env.*
+!/.env.example
+
+# Ignore logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Ignore build output
+dist
+build
+out
+
+# Ignore IDE and editor specific files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
