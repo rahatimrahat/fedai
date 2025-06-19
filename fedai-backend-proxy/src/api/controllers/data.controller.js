@@ -191,15 +191,40 @@ const getSoilData = async (req, res) => {
     
     try {
         const data = await robustFetch(soilGridsApiUrl, {}, GEOLOCATION_API_TIMEOUT_MS + 6000);
+
+        // Check for valid data structure from SoilGrids
+        if (!data || !data.properties || !Array.isArray(data.properties.layers)) {
+            console.warn('SoilGrids returned invalid data structure. Data:', data);
+            return res.status(502).json({
+                error: 'SoilGrids returned an invalid or unexpected data structure.',
+                source: 'SoilGrids (InvalidResponseStructure)'
+            });
+        }
         
+        // console.log(`// DEBUG_SOIL: Processing valid SoilGrids structure for ${latitude},${longitude}. Layers count: ${data.properties.layers.length}`);
         const soilProps = {};
         let wv0033_value = null;
         let wv1500_value = null;
         
         data.properties.layers.forEach(layer => {
+            // console.log(`// DEBUG_SOIL: Processing layer:`, JSON.stringify(layer)); // Might be too verbose
+            if (!layer || typeof layer !== 'object') {
+                console.warn(`// DEBUG_SOIL: Invalid layer object encountered: `, layer);
+                return; // Skip this iteration
+            }
+            // console.log(`// DEBUG_SOIL: Layer name: ${layer.name}, Depths: ${JSON.stringify(layer.depths)}`);
+            if (!layer.depths || !Array.isArray(layer.depths) || !layer.depths[0] || typeof layer.depths[0] !== 'object' || !layer.depths[0].values || typeof layer.depths[0].values !== 'object') {
+                console.warn(`// DEBUG_SOIL: Layer with unexpected depths/values structure:`, JSON.stringify(layer));
+                // Optional: depending on how critical layerValue is, you might 'return;' here too
+            }
+
             const layerValue = layer.depths[0]?.values?.mean;
             if (layerValue === null || layerValue === undefined) return;
-            const propName = layer.name.split('_')[0];
+
+            const propName = layer.name ? String(layer.name).split('_')[0] : 'unknown';
+            if (propName === 'unknown') {
+                console.warn(`// DEBUG_SOIL: Layer encountered with missing or invalid name:`, layer);
+            }
             switch(propName) {
                 case 'phh2o': soilProps.soilPH = (layerValue / 10).toFixed(1); break;
                 case 'soc': soilProps.soilOrganicCarbon = `${(layerValue / 10).toFixed(1)} g/kg`; break;
@@ -249,7 +274,11 @@ const getSoilData = async (req, res) => {
         if (error.message && (error.message.includes('status: 404') || error.message.includes('No data at location'))) {
             res.json({ source: 'SoilGrids (NoDataAtLocation)' });
         } else {
-            res.status(500).json({ error: error.message || 'Failed to fetch soil data from SoilGrids.' });
+            console.error(`[SOIL_API_ERROR] Unhandled error in getSoilData for ${latitude},${longitude}:`, error);
+            res.status(500).json({
+                error: 'An unexpected error occurred while fetching soil data.',
+                detail: String(error.message || error) // Ensure detail is always a string
+            });
         }
     }
 };
