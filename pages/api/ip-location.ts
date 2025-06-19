@@ -13,11 +13,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const ip = typeof forwarded === 'string' ? forwarded.split(/, /)[0] : req.socket.remoteAddress;
 
   // Log the determined IP for debugging (optional, consider removing in production if sensitive)
-  // console.log(`Determined IP address: ${ip}`);
+  console.log(`// DEBUG_LOG: Determined IP address: ${ip}`);
 
   // --- Primary Service Call (ipapi.co) ---
   try {
-// refactor/location-processing-improvements
     // ipapi.co uses the caller's IP address if no IP is specified in the path.
     // For a Next.js API route, this will be the user's IP or a close proxy.
     // If we needed to specify an IP: const primaryUrl = `https://ipapi.co/${ip}/json/`;
@@ -28,14 +27,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!primaryRes.ok) {
-      // console.warn(`ipapi.co failed with status: ${primaryRes.status}`);
+      console.warn(`// DEBUG_LOG: ipapi.co failed with status: ${primaryRes.status}`);
       throw new Error(`ipapi.co request failed with status ${primaryRes.status}`);
     }
 
     const data = await primaryRes.json();
 
     if (data.error) {
-      // console.warn(`ipapi.co returned error: ${data.reason}`);
+      console.warn(`// DEBUG_LOG: ipapi.co returned error: ${data.reason}`);
       throw new Error(data.reason || 'ipapi.co returned an error');
     }
 
@@ -52,11 +51,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
     // If no latitude/longitude, treat as failure and fall through to secondary
-    // console.warn('ipapi.co did not return latitude/longitude.');
+    console.warn('// DEBUG_LOG: ipapi.co did not return latitude/longitude.');
     throw new Error('ipapi.co did not return latitude/longitude');
 
   } catch (error) {
-    // console.warn(`Error with ipapi.co: ${error instanceof Error ? error.message : String(error)}. Falling back to ip-api.com.`);
+    console.warn(`// DEBUG_LOG: Error with ipapi.co: ${error instanceof Error ? error.message : String(error)}. Falling back to ip-api.com.`);
 
     // --- Fallback Service Call (ip-api.com) ---
     try {
@@ -71,14 +70,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       if (!fallbackRes.ok) {
-        // console.warn(`ip-api.com failed with status: ${fallbackRes.status}`);
+        console.warn(`// DEBUG_LOG: ip-api.com failed with status: ${fallbackRes.status}`);
         throw new Error(`ip-api.com request failed with status ${fallbackRes.status}`);
       }
 
       const dataFallback = await fallbackRes.json();
 
       if (dataFallback.status === 'fail') {
-        // console.warn(`ip-api.com returned error: ${dataFallback.message}`);
+        console.warn(`// DEBUG_LOG: ip-api.com returned error: ${dataFallback.message}`);
         throw new Error(dataFallback.message || 'ip-api.com returned status: fail');
       }
 
@@ -94,42 +93,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
         return;
       }
-      // console.warn('ip-api.com did not return success or latitude/longitude.');
+      console.warn('// DEBUG_LOG: ip-api.com did not return success or latitude/longitude.');
       throw new Error('ip-api.com did not return success or valid location data.');
 
     } catch (fallbackError) {
-      // console.error(`All IP location services failed. Primary error: ${error instanceof Error ? error.message : String(error)}, Fallback error: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`);
+      console.error(`// DEBUG_LOG: All IP location services failed. Primary error: ${error instanceof Error ? error.message : String(error)}, Fallback error: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`);
       res.status(503).json({
         error: 'All IP location services failed.',
         primaryError: error instanceof Error ? error.message : String(error),
         fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
       });
     }
-//
-    // TODO: Use an environment variable for the proxy URL in a production setup
-    const proxyRes = await fetch('http://localhost:3001/api/ip-location', {
-      method: 'GET',
-      headers: {
-        // Forward necessary headers if any. For now, let's assume User-Agent is handled by the proxy or not strictly needed.
-        // 'User-Agent': req.headers['user-agent'] || 'Next.js API Route',
-      },
-    });
-
-    if (!proxyRes.ok) {
-      // If the proxy server responded with an error, forward that status and message
-      const errorData = await proxyRes.json().catch(() => ({ error: 'Proxy server returned an error' }));
-      res.status(proxyRes.status).json(errorData);
-      return;
-    }
-
-    const data = await proxyRes.json();
-    // Assuming the proxy returns data in the expected format
-    // If the proxy already formats it to match IpLocationFetchResult, this is fine.
-    // Otherwise, mapping might be needed here.
-    res.status(200).json(data);
-  } catch (error) {
-    console.error('Error calling IP location proxy:', error);
-    res.status(500).json({ error: 'Failed to fetch IP location via proxy' });
-// main
   }
 }
