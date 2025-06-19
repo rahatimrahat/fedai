@@ -13,49 +13,8 @@ const {
   GEOLOCATION_API_TIMEOUT_MS,
 } = require('../utils/constants');
 
-// --- IP Location Controller ---
-const getIpLocation = async (req, res) => {
-  // console.log("Received request for /api/ip-location");
-  try {
-    // Try primary service: ipapi.co
-    try {
-      const data = await robustFetch(IPAPI_CO_URL, { headers: { 'User-Agent': 'FedaiProxy/1.0' } }, 3500);
-      if (!data.error && data.latitude && data.longitude) {
-        return res.json({
-          latitude: data.latitude,
-          longitude: data.longitude,
-          source: 'ip',
-          city: data.city,
-          country: data.country_name,
-          countryCode: data.country_code,
-          serviceName: 'ipapi.co',
-        });
-      }
-      // console.warn('ipapi.co failed or returned no location:', data.reason || data.message);
-    } catch (primaryError) {
-      // console.error(`Primary IP service (ipapi.co) failed: ${primaryError.message}. Trying fallback.`);
-    }
-
-    // Try secondary service: ip-api.com
-    const dataFallback = await robustFetch(IP_API_COM_URL, { headers: { 'User-Agent': 'FedaiProxy/1.0' } }, 3500);
-    if (dataFallback.status === 'success' && dataFallback.lat && dataFallback.lon) {
-      return res.json({
-        latitude: dataFallback.lat,
-        longitude: dataFallback.lon,
-        source: 'ip',
-        city: dataFallback.city,
-        country: dataFallback.country,
-        countryCode: dataFallback.countryCode,
-        serviceName: 'ip-api.com',
-      });
-    }
-    // console.warn('ip-api.com also failed or returned no location:', dataFallback.message);
-    res.status(503).json({ error: 'All IP location services failed.' });
-  } catch (error) {
-    // console.error('Error in /api/ip-location proxy:', error);
-    res.status(500).json({ error: error.message || 'Failed to fetch IP location from external services.' });
-  }
-};
+// IP Location fetching is now handled directly by the Next.js API route (pages/api/ip-location.ts)
+// The getIpLocation function has been removed from this controller.
 
 // Helper function to calculate averages from daily data
 function calculateAveragesFromDaily(dailyData) {
@@ -264,9 +223,14 @@ const getSoilData = async (req, res) => {
             // So, ( (wv0033/100) - (wv1500/100) ) * 50mm
             // = (wv0033 - wv1500) / 100 * 50
             // = (wv0033 - wv1500) / 2
-            // The original calculation was (wv0033_value - wv1500_value) / 20. This might be if the values were scaled by 1000 instead of 100.
-            // Let's assume the original factor of /20 implies the values are in per mille (‰) or some other unit.
-            // Sticking to the original calculation /20 for consistency with existing frontend.
+            // The original calculation was (wv0033_value - wv1500_value) / 20.
+            // This implies that the SoilGrids wv values (wv0033_value, wv1500_value) are volumetric water content (cm³/cm³) scaled by 1000 (i.e., in permille).
+            // The AWC (Available Water Capacity) is then calculated for a 5cm (50mm) soil layer depth.
+            // Derivation:
+            // AWC (mm) = ( (wv0033_value / 1000) - (wv1500_value / 1000) ) * 50mm layer_depth
+            // AWC (mm) = (wv0033_value - wv1500_value) / 1000 * 50
+            // AWC (mm) = (wv0033_value - wv1500_value) / 20
+            // Sticking to this original calculation /20 for consistency with existing frontend.
             soilProps.soilAWC = `${((wv0033_value - wv1500_value) / 20).toFixed(1)} mm`;
         }
 
@@ -292,7 +256,7 @@ const getSoilData = async (req, res) => {
 
 
 module.exports = {
-  getIpLocation,
+  // getIpLocation, // Removed
   getWeatherData,
   getElevationData,
   getSoilData,

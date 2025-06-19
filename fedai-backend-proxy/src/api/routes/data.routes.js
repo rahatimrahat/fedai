@@ -4,8 +4,8 @@ const express = require('express');
 const router = express.Router();
 const dataController = require('../controllers/data.controller');
 
-// IP Location Route
-router.get('/ip-location', dataController.getIpLocation);
+// IP Location Route - This has been removed as IP location is now handled by the Next.js API route
+// router.get('/ip-location', dataController.getIpLocation);
 
 // Weather Data Route
 router.post('/weather', dataController.getWeatherData);
