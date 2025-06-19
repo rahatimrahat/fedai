@@ -191,6 +191,15 @@ const getSoilData = async (req, res) => {
     
     try {
         const data = await robustFetch(soilGridsApiUrl, {}, GEOLOCATION_API_TIMEOUT_MS + 6000);
+
+        // Check for valid data structure from SoilGrids
+        if (!data || !data.properties || !Array.isArray(data.properties.layers)) {
+            console.warn('SoilGrids returned invalid data structure. Data:', data);
+            return res.status(502).json({
+                error: 'SoilGrids returned an invalid or unexpected data structure.',
+                source: 'SoilGrids (InvalidResponseStructure)'
+            });
+        }
         
         const soilProps = {};
         let wv0033_value = null;
