@@ -13,49 +13,8 @@ const {
   GEOLOCATION_API_TIMEOUT_MS,
 } = require('../utils/constants');
 
-// --- IP Location Controller ---
-const getIpLocation = async (req, res) => {
-  // console.log("Received request for /api/ip-location");
-  try {
-    // Try primary service: ipapi.co
-    try {
-      const data = await robustFetch(IPAPI_CO_URL, { headers: { 'User-Agent': 'FedaiProxy/1.0' } }, 3500);
-      if (!data.error && data.latitude && data.longitude) {
-        return res.json({
-          latitude: data.latitude,
-          longitude: data.longitude,
-          source: 'ip',
-          city: data.city,
-          country: data.country_name,
-          countryCode: data.country_code,
-          serviceName: 'ipapi.co',
-        });
-      }
-      // console.warn('ipapi.co failed or returned no location:', data.reason || data.message);
-    } catch (primaryError) {
-      // console.error(`Primary IP service (ipapi.co) failed: ${primaryError.message}. Trying fallback.`);
-    }
-
-    // Try secondary service: ip-api.com
-    const dataFallback = await robustFetch(IP_API_COM_URL, { headers: { 'User-Agent': 'FedaiProxy/1.0' } }, 3500);
-    if (dataFallback.status === 'success' && dataFallback.lat && dataFallback.lon) {
-      return res.json({
-        latitude: dataFallback.lat,
-        longitude: dataFallback.lon,
-        source: 'ip',
-        city: dataFallback.city,
-        country: dataFallback.country,
-        countryCode: dataFallback.countryCode,
-        serviceName: 'ip-api.com',
-      });
-    }
-    // console.warn('ip-api.com also failed or returned no location:', dataFallback.message);
-    res.status(503).json({ error: 'All IP location services failed.' });
-  } catch (error) {
-    // console.error('Error in /api/ip-location proxy:', error);
-    res.status(500).json({ error: error.message || 'Failed to fetch IP location from external services.' });
-  }
-};
+// IP Location fetching is now handled directly by the Next.js API route (pages/api/ip-location.ts)
+// The getIpLocation function has been removed from this controller.
 
 // Helper function to calculate averages from daily data
 function calculateAveragesFromDaily(dailyData) {
@@ -297,7 +256,7 @@ const getSoilData = async (req, res) => {
 
 
 module.exports = {
-  getIpLocation,
+  // getIpLocation, // Removed
   getWeatherData,
   getElevationData,
   getSoilData,
