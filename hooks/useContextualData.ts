@@ -34,99 +34,124 @@ export function useContextualData(userLocation: UserLocation | null) {
             errorKey: null, 
             error: undefined, // Explicitly clear direct error string
         }));
+        setWeatherData(prev => ({
+            ...(prev || {}), // Keep existing data if any, like timestamp
+            current: null, // Clear specific data fields
+            recentDailyRawData: null,
+            recentMonthlyAverage: null,
+            historicalMonthlyAverage: null,
+            errorKey: null,
+            error: undefined,
+        }));
         setEnvironmentalData(prev => ({ 
             ...(prev || {}), 
+            elevation: null, // Clear specific data fields
+            soilPH: null,
+            soilOrganicCarbon: null,
+            soilCEC: null,
+            soilNitrogen: null,
+            soilSand: null,
+            silt: null,
+            soilClay: null,
+            soilAWC: null,
             errorKey: null, 
-            error: undefined // Explicitly clear direct error string
+            error: undefined
         }));
         
-        const weatherPromise = fetchWeatherData(userLocation).then(newGenericWeatherData => {
-          setWeatherData(prev => ({
-            ...(prev || {}), 
-            current: newGenericWeatherData.current,
-            recentDailyRawData: newGenericWeatherData.recentDailyRawData,
-            recentMonthlyAverage: newGenericWeatherData.recentMonthlyAverage,
-            historicalMonthlyAverage: newGenericWeatherData.historicalMonthlyAverage,
-            weatherDataTimestamp: newGenericWeatherData.weatherDataTimestamp,
-            errorKey: newGenericWeatherData.error ? 'weatherUnavailable' : null,
-            // error field will be populated by the effect below based on errorKey
-          }));
-        }).catch(err => {
-            console.error("Weather fetch error in useContextualData:", err);
-            setWeatherData(prevData => ({
-                ...prevData,
-                errorKey: 'weatherUnavailable',
-                weatherDataTimestamp: new Date().toISOString()
-            }));
-        }).finally(() => setIsLoadingWeather(false));
-
-        const elevPromise = fetchElevation(userLocation);
-        const soilPromise = fetchSoilData(userLocation); // Returns SoilDataReturnType
-
-        // Use Promise.allSettled to handle individual promise failures without Promise.all failing fast.
-        const envPromise = Promise.allSettled([elevPromise, soilPromise]).then(([elevationResult, soilResult]) => {
-            const envDataToSet: EnvironmentalData = {
-                dataTimestamp: new Date().toISOString(),
-                errorKey: null,
-                error: undefined, // Initialize error message field
-                // soilErrorDetail: undefined, // This field is removed
-            };
-
-            let elevationErrorKey: string | null = null;
-            if (elevationResult.status === 'fulfilled' && elevationResult.value?.elevation) {
-                envDataToSet.elevation = elevationResult.value.elevation;
-            } else {
-                elevationErrorKey = 'elevationDataUnavailable'; // Potential error
+        const weatherFetcher = async () => {
+            try {
+              const newGenericWeatherData = await fetchWeatherData(userLocation);
+              setWeatherData(prev => ({ // Ensure all fields are set from newGenericWeatherData
+                current: newGenericWeatherData.current,
+                recentDailyRawData: newGenericWeatherData.recentDailyRawData,
+                recentMonthlyAverage: newGenericWeatherData.recentMonthlyAverage,
+                historicalMonthlyAverage: newGenericWeatherData.historicalMonthlyAverage,
+                weatherDataTimestamp: newGenericWeatherData.weatherDataTimestamp,
+                errorKey: null, // Explicitly null on success
+                error: undefined,
+              }));
+            } catch (err) {
+                console.error("Weather fetch error in useContextualData:", err);
+                setWeatherData(prevData => ({
+                    ...(prevData || {}),
+                    current: null,
+                    recentDailyRawData: null,
+                    recentMonthlyAverage: null,
+                    historicalMonthlyAverage: null,
+                    errorKey: 'weatherUnavailable',
+                    error: (err instanceof Error ? err.message : String(err)),
+                    weatherDataTimestamp: prevData?.weatherDataTimestamp || new Date().toISOString()
+                }));
+            } finally {
+                setIsLoadingWeather(false);
             }
+        };
 
-            let soilErrorKey: string | null = null;
-            if (soilResult.status === 'fulfilled' && soilResult.value) {
-                const soilVal = soilResult.value; // SoilDataReturnType
-                if (soilVal.data && Object.keys(soilVal.data).length > 0) {
-                    Object.assign(envDataToSet, soilVal.data);
-                    // if (soilVal.source) envDataToSet.soilSource = soilVal.source; // Optional: if you want to store source
-                } else if (soilVal.errorCode) { // Backend or service layer reported a structured error
-                    soilErrorKey = soilVal.errorCode;
-                    envDataToSet.error = soilVal.error; // Use message from backend/service
-                    // if (soilVal.detail) envDataToSet.soilErrorDetail = soilVal.detail; // If we decide to keep detail
-                } else { // Fallback if structure is unexpected (should not happen if service is robust)
-                    soilErrorKey = 'soilDataUnavailable';
-                    envDataToSet.error = uiStrings.soilDataUnavailable || 'Soil data is unavailable.';
+        const envFetcher = async () => {
+            const elevPromise = fetchElevation(userLocation);
+            const soilPromise = fetchSoilData(userLocation);
+
+            try {
+                const [elevationResult, soilResult] = await Promise.allSettled([elevPromise, soilPromise]);
+
+                const envDataToSet: EnvironmentalData = {
+                    dataTimestamp: new Date().toISOString(),
+                    errorKey: null,
+                    error: undefined,
+                };
+
+                if (elevationResult.status === 'fulfilled' && elevationResult.value?.elevation !== undefined) {
+                    envDataToSet.elevation = elevationResult.value.elevation;
+                } else if (elevationResult.status === 'rejected') {
+                    console.error("Elevation fetch error:", elevationResult.reason);
+                    envDataToSet.errorKey = 'elevationDataUnavailable';
+                    envDataToSet.error = (elevationResult.reason instanceof Error ? elevationResult.reason.message : String(elevationResult.reason));
+                } else { // Fulfilled but no elevation data or undefined (should not happen with current service)
+                    envDataToSet.errorKey = 'elevationDataUnavailable';
+                    envDataToSet.error = uiStrings.elevationDataUnavailable || 'Elevation data is unavailable (empty).';
                 }
-            } else { // soilPromise itself failed or value somehow null
-                soilErrorKey = 'soilDataFetchError'; // Generic fetch error for the promise itself
-                // Try to get more specific error from rejected promise if possible
-                if (soilResult.status === 'rejected' && soilResult.reason?.error && soilResult.reason?.errorCode) {
-                    envDataToSet.error = soilResult.reason.error;
-                    soilErrorKey = soilResult.reason.errorCode;
-                } else if (soilResult.status === 'rejected' && soilResult.reason instanceof Error) {
-                     envDataToSet.error = soilResult.reason.message;
-                } else {
-                    envDataToSet.error = uiStrings.soilDataFetchError || 'Failed to fetch soil data.';
+
+                if (soilResult.status === 'fulfilled' && soilResult.value) {
+                    const soilVal = soilResult.value; // SoilDataReturnType
+                    if (soilVal.data && Object.keys(soilVal.data).length > 0) {
+                        Object.assign(envDataToSet, soilVal.data);
+                        // If elevation succeeded but soil failed, we don't want soil's error to overwrite elevation's success
+                        // So, only set soil error if there isn't an elevation error already, or make it combined.
+                        // For simplicity, let's prioritize the first error or a combined one.
+                        // The current logic below will set soilErrorKey if soil fails, potentially overwriting elevationErrorKey.
+                        // This needs careful handling if both can fail.
+                    } else { // This 'else' means soilPromise fulfilled, but soilVal.data is empty or soilVal.error/errorCode is present.
+                        // This case is now handled by fetchSoilDataViaProxy throwing an error, so it would be 'rejected'.
+                        // Kept for robustness if service changes.
+                        envDataToSet.errorKey = envDataToSet.errorKey || 'soilDataUnavailable'; // Preserve elevation error if present
+                        envDataToSet.error = envDataToSet.error || (soilVal.error || uiStrings.soilDataUnavailable || 'Soil data is unavailable (empty).');
+                    }
+                } else if (soilResult.status === 'rejected') {
+                    console.error("Soil fetch error:", soilResult.reason);
+                    // If elevation also failed, errorKey might already be set. Append or use a generic one.
+                    if (envDataToSet.errorKey) { // Both failed
+                        envDataToSet.errorKey = 'environmentalDataUnavailable'; // Generic key
+                        envDataToSet.error = `${envDataToSet.error}. ${uiStrings.soilDataUnavailable || 'Soil data also unavailable.'} ${(soilResult.reason instanceof Error ? soilResult.reason.message : String(soilResult.reason))}`;
+                    } else {
+                        envDataToSet.errorKey = 'soilDataUnavailable';
+                        envDataToSet.error = (soilResult.reason instanceof Error ? soilResult.reason.message : String(soilResult.reason));
+                    }
                 }
+                setEnvironmentalData(prev => ({...(prev || { dataTimestamp: envDataToSet.dataTimestamp }), ...envDataToSet}));
+            } catch (criticalError) { // Catch for Promise.allSettled itself or critical unhandled issue
+                 console.error("Critical error in environmental data Promise.allSettled block:", criticalError);
+                 setEnvironmentalData({
+                     errorKey: 'environmentalDataUnavailable',
+                     error: (criticalError instanceof Error ? criticalError.message : String(criticalError)),
+                     dataTimestamp: new Date().toISOString()
+                 });
+            } finally {
+                setIsLoadingEnvironmental(false);
             }
+        };
 
-            // Determine final errorKey and error message
-            if (soilErrorKey) {
-                envDataToSet.errorKey = soilErrorKey;
-                // envDataToSet.error is already set from soil processing
-            } else if (elevationErrorKey) {
-                envDataToSet.errorKey = elevationErrorKey;
-                envDataToSet.error = uiStrings.elevationDataUnavailable || 'Elevation data is unavailable.';
-            } else {
-                envDataToSet.errorKey = null; // Both successful
-                envDataToSet.error = undefined; // Clear any potential error message
-            }
-
-            setEnvironmentalData(prev => ({...(prev || { dataTimestamp: envDataToSet.dataTimestamp }), ...envDataToSet}));
-        }).catch(err => { // Should be less likely to be hit if using allSettled properly for sub-promises
-            console.error("Critical error in environmental data processing:", err);
-            setEnvironmentalData({ errorKey: 'environmentalDataUnavailable', error: uiStrings.environmentalDataUnavailable, dataTimestamp: new Date().toISOString() });
-        }).finally(() => setIsLoadingEnvironmental(false));
-
-        // Await all top-level promises (weatherPromise is already being handled with its own .then/.catch/.finally)
-        // envPromise handles its own setIsLoadingEnvironmental(false)
-        await Promise.allSettled([weatherPromise, envPromise]); // Keep this for overall completion if needed, or rely on individual finally blocks.
+        weatherFetcher();
+        envFetcher();
       };
       fetchData();
     } else {

@@ -36,18 +36,23 @@ export async function getCachedOrFetch<T>(
     localStorage.removeItem(cacheKey); // Corrupted
   }
 
-  const freshData = await fetchFunction();
-  
-  // Only cache if freshData is not undefined. 
-  // Null is a valid cacheable value (e.g. elevation can be null).
-  // For errors, the fetchFunction itself should return a specific error structure
-  // as part of T if error states need to be cached.
-  if (freshData !== undefined) {
-    const itemToCache: CachedItem<T> = {
-      timestamp: Date.now(),
-      data: freshData,
-    };
-    throttledSetLocalStorageItem(cacheKey, JSON.stringify(itemToCache));
+  try {
+    const freshData = await fetchFunction(); // This might throw now
+
+    // Only cache if freshData is not undefined (and no error was thrown)
+    // Null is a valid cacheable value (e.g. elevation can be null).
+    if (freshData !== undefined) {
+      const itemToCache: CachedItem<T> = {
+        timestamp: Date.now(),
+        data: freshData,
+      };
+      throttledSetLocalStorageItem(cacheKey, JSON.stringify(itemToCache));
+    }
+    return freshData;
+  } catch (error) {
+    console.warn(`Fetch function for cache key ${cacheKey} failed and will not be cached:`, error);
+    // Do not cache anything if fetchFunction throws.
+    // Re-throw the error so the caller can handle it.
+    throw error;
   }
-  return freshData;
 }

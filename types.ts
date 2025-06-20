@@ -354,6 +354,7 @@ export interface DiseaseInfo {
   differentialDiagnoses?: Array<{ name: string; justification: string; }> | null;
   qualitativeConfidence: QualitativeConfidenceData | null; // Uses the updated QualitativeConfidenceData
   errorCode?: 'NO_DISEASE_PLANT_HEALTHY' | 'NO_DISEASE_IMAGE_INSUFFICIENT' | 'NO_DISEASE_GENERAL_SYMPTOMS' | null;
+  isErrorState?: boolean;
 }
 
 export interface ImageFile {

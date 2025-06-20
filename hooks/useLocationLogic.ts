@@ -189,7 +189,7 @@ export function useLocationLogic() {
       },
       { enableHighAccuracy: false, timeout: GEOLOCATION_HIGH_ACCURACY_TIMEOUT_MS, maximumAge: GEOLOCATION_MAXIMUM_AGE_MS } // Options for GPS
     );
-  }, [uiStrings, fetchIpLocationData, userLocation, setError, setStatus]); // userLocation needed for enrichment check
+  }, [uiStrings, fetchIpLocationData, setError, setStatus]);
 
   // Main effect for initializing location fetching and handling permission changes.
   useEffect(() => {
