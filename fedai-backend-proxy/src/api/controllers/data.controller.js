@@ -192,39 +192,41 @@ const getSoilData = async (req, res) => {
     try {
         const data = await robustFetch(soilGridsApiUrl, {}, GEOLOCATION_API_TIMEOUT_MS + 6000);
 
-        // Check for valid data structure from SoilGrids
+        // Handle Invalid API Response Structure
         if (!data || !data.properties || !Array.isArray(data.properties.layers)) {
-            console.warn('SoilGrids returned invalid data structure. Data:', data);
             return res.status(502).json({
-                error: 'SoilGrids returned an invalid or unexpected data structure.',
-                source: 'SoilGrids (InvalidResponseStructure)'
+                error: 'SoilGrids returned an invalid response.',
+                errorCode: 'SOIL_DATA_INVALID_RESPONSE',
+                source: 'SoilGrids'
             });
         }
         
-        // console.log(`// DEBUG_SOIL: Processing valid SoilGrids structure for ${latitude},${longitude}. Layers count: ${data.properties.layers.length}`);
+        // Handle "No Data At Location"
+        if (data.properties.layers.length === 0 || data.properties.layers.every(l => l.depths[0]?.values?.mean === null || l.depths[0]?.values?.mean === undefined)) {
+            return res.status(200).json({
+                error: 'Soil data is not available for this specific location.',
+                errorCode: 'SOIL_DATA_NOT_AT_LOCATION',
+                source: 'SoilGrids'
+            });
+        }
+
         const soilProps = {};
         let wv0033_value = null;
         let wv1500_value = null;
         
         data.properties.layers.forEach(layer => {
-            // console.log(`// DEBUG_SOIL: Processing layer:`, JSON.stringify(layer)); // Might be too verbose
-            if (!layer || typeof layer !== 'object') {
-                console.warn(`// DEBUG_SOIL: Invalid layer object encountered: `, layer);
-                return; // Skip this iteration
-            }
-            // console.log(`// DEBUG_SOIL: Layer name: ${layer.name}, Depths: ${JSON.stringify(layer.depths)}`);
-            if (!layer.depths || !Array.isArray(layer.depths) || !layer.depths[0] || typeof layer.depths[0] !== 'object' || !layer.depths[0].values || typeof layer.depths[0].values !== 'object') {
-                console.warn(`// DEBUG_SOIL: Layer with unexpected depths/values structure:`, JSON.stringify(layer));
-                // Optional: depending on how critical layerValue is, you might 'return;' here too
+            if (!layer || typeof layer !== 'object' || !layer.depths || !Array.isArray(layer.depths) || !layer.depths[0] || typeof layer.depths[0] !== 'object' || !layer.depths[0].values || typeof layer.depths[0].values !== 'object') {
+                // console.warn(`// DEBUG_SOIL: Layer with unexpected depths/values structure:`, JSON.stringify(layer)); // Kept for debugging if necessary, but less verbose
+                return;
             }
 
             const layerValue = layer.depths[0]?.values?.mean;
             if (layerValue === null || layerValue === undefined) return;
 
             const propName = layer.name ? String(layer.name).split('_')[0] : 'unknown';
-            if (propName === 'unknown') {
-                console.warn(`// DEBUG_SOIL: Layer encountered with missing or invalid name:`, layer);
-            }
+            // if (propName === 'unknown') { // Less critical log, can be removed if too noisy
+            //     console.warn(`// DEBUG_SOIL: Layer encountered with missing or invalid name:`, layer);
+            // }
             switch(propName) {
                 case 'phh2o': soilProps.soilPH = (layerValue / 10).toFixed(1); break;
                 case 'soc': soilProps.soilOrganicCarbon = `${(layerValue / 10).toFixed(1)} g/kg`; break;
@@ -259,27 +261,29 @@ const getSoilData = async (req, res) => {
             soilProps.soilAWC = `${((wv0033_value - wv1500_value) / 20).toFixed(1)} mm`;
         }
 
+        // Standardize Success Response
         if (Object.keys(soilProps).length > 0) {
-            res.json({ ...soilProps, source: 'SoilGrids' });
+            res.json({
+                data: soilProps,
+                source: 'SoilGrids',
+                dataTimestamp: new Date().toISOString()
+            });
         } else {
-            // console.warn(`SoilGrids returned no processable data for ${latitude},${longitude}`);
-            if (data?.properties?.layers?.length === 0 || (data?.properties?.layers?.every(l => l.depths[0]?.values?.mean === null || l.depths[0]?.values?.mean === undefined))) {
-                res.json({ source: 'SoilGrids (NoDataAtLocation)' });
-            } else {
-                res.status(503).json({ error: 'SoilGrids returned no valid soil properties.', source: 'SoilGrids' });
-            }
-        }
-    } catch (error) {
-        // console.error(`Error in /api/soil proxy for ${latitude},${longitude}:`, error);
-        if (error.message && (error.message.includes('status: 404') || error.message.includes('No data at location'))) {
-            res.json({ source: 'SoilGrids (NoDataAtLocation)' });
-        } else {
-            console.error(`[SOIL_API_ERROR] Unhandled error in getSoilData for ${latitude},${longitude}:`, error);
-            res.status(500).json({
-                error: 'An unexpected error occurred while fetching soil data.',
-                detail: String(error.message || error) // Ensure detail is always a string
+            // Handle "Relevant Properties Missing" (and it wasn't a "No Data At Location" case, as that's handled above)
+            return res.status(200).json({
+                error: 'Could not find relevant soil properties for this location.',
+                errorCode: 'SOIL_DATA_PROPERTIES_MISSING',
+                source: 'SoilGrids'
             });
         }
+    } catch (error) {
+        console.error(`[SOIL_API_ERROR] Unhandled error in getSoilData for ${latitude},${longitude}:`, error);
+        // Handle General Fetch/Processing Errors
+        res.status(500).json({
+            error: 'Failed to fetch or process soil data from the provider.',
+            errorCode: 'SOIL_DATA_FETCH_FAILED',
+            detail: String(error.message || error)
+        });
     }
 };
 
