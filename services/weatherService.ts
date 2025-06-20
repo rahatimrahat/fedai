@@ -29,41 +29,52 @@ async function fetchAndProcessWeatherDataViaProxy(location: UserLocation): Promi
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: `Proxy HTTP error! status: ${response.status}` }));
-      throw new Error(errorData.error || `Proxy HTTP error! status: ${response.status}`);
+      let errorMessage = `Proxy HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData && errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch (e) {
+        // Use default message
+      }
+      throw new Error(errorMessage);
     }
 
     // Backend now sends pre-calculated averages and raw daily data
     const proxyResponse = await response.json() as WeatherData; 
     
+    // Check if any crucial data component is present
+    if (!(proxyResponse.current || proxyResponse.recentMonthlyAverage || proxyResponse.historicalMonthlyAverage)) {
+        // console.warn(`Weather proxy for ${latitude},${longitude} returned no data components.`); // Keep console.warn if desired
+        throw new Error(`Weather proxy for ${latitude},${longitude} returned no data components.`);
+    }
+
     const fetchedData: WeatherData = {
       current: proxyResponse.current,
       recentDailyRawData: proxyResponse.recentDailyRawData, // Still useful for sparklines
       recentMonthlyAverage: proxyResponse.recentMonthlyAverage,
       historicalMonthlyAverage: proxyResponse.historicalMonthlyAverage,
       weatherDataTimestamp: proxyResponse.weatherDataTimestamp || currentTimestamp,
+      // error field is no longer part of WeatherData if fetch is successful
     };
 
-    if (proxyResponse.current || proxyResponse.recentMonthlyAverage || proxyResponse.historicalMonthlyAverage) {
-        return fetchedData;
-    } else {
-        // console.warn(`Weather proxy for ${latitude},${longitude} returned no data components.`);
-        return { error: 'Weather proxy returned no data.', weatherDataTimestamp: currentTimestamp };
-    }
+    return fetchedData;
 
   } catch (error) {
     let errorMessage = `Error fetching weather data via proxy for ${latitude},${longitude}`;
      if (error instanceof Error) {
+        errorMessage = error.message; // Use original message
         if (error.name === 'AbortError') {
             errorMessage = `Weather proxy request timed out for ${latitude},${longitude}.`;
-        } else if (error.message.toLowerCase().includes('failed to fetch')) {
-            errorMessage = `Network error or CORS issue with weather proxy for ${latitude},${longitude} (Failed to fetch). Check browser console.`;
-        } else {
-            errorMessage = `${errorMessage}: ${error.message}`;
+        } else if (errorMessage.toLowerCase().includes('failed to fetch')) {
+            errorMessage = `Network error or CORS issue with weather proxy: ${errorMessage}`;
         }
+    } else {
+        errorMessage = String(error);
     }
-    // console.error(errorMessage, error);
-    return { error: errorMessage, weatherDataTimestamp: currentTimestamp };
+    console.error(`Error fetching weather data via proxy for ${latitude},${longitude}: ${errorMessage}. Original error:`, error);
+    throw new Error(errorMessage);
   }
 }
 

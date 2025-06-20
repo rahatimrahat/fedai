@@ -28,43 +28,60 @@ async function fetchIpLocationViaProxy(): Promise<IpLocationFetchResult> {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: `Proxy HTTP error! status: ${response.status}` }));
-      throw new Error(errorData.error || `Proxy HTTP error! status: ${response.status}`);
+      let errorMessage = `Proxy HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData && errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch (e) {
+        // Ignore if error response is not JSON, use default message
+      }
+      throw new Error(errorMessage);
     }
     
     const data = await response.json();
 
-    if (data.latitude && data.longitude) {
-      return {
-        location: {
-          latitude: data.latitude,
-          longitude: data.longitude,
-          source: 'ip', 
-          city: data.city,
-          country: data.country, 
-          countryCode: data.countryCode,
-          // Accuracy message will be constructed in useLocationLogic based on this data
-        } as UserLocation,
-        serviceName: data.serviceName || 'proxy',
-      };
-    } else {
-      // console.warn('Proxy IP location call failed or returned no location:', data.error);
-      return { location: null, serviceName: null, error: data.error || 'Proxy returned no IP location data.' };
+    // Assuming data structure is { latitude, longitude, city, country, countryCode, serviceName }
+    // If data is not as expected, or lat/lon are missing, it implies an issue.
+    // The original logic returned a specific error object. Now, we should ensure valid data or throw.
+    // If critical fields are missing, it might be better to throw an error,
+    // or ensure the caller can handle potentially incomplete UserLocation.
+    // For now, let's assume that if response.ok and JSON is parsed, data is valid as per expectations.
+    // If specific fields like latitude or longitude are absolutely critical,
+    // an additional check and throw could be added here.
+    if (data.latitude === undefined || data.longitude === undefined) {
+        // This case might indicate an unexpected response structure even if response.ok was true.
+        throw new Error('Proxy returned incomplete IP location data.');
     }
+
+    return {
+      location: {
+        latitude: data.latitude,
+        longitude: data.longitude,
+        source: 'ip',
+        city: data.city,
+        country: data.country,
+        countryCode: data.countryCode,
+        // Accuracy message will be constructed in useLocationLogic based on this data
+      } as UserLocation,
+      serviceName: data.serviceName || 'proxy',
+    };
   } catch (error) {
     let errorMessage = 'Unknown error with IP location proxy.';
     if (error instanceof Error) {
-        errorMessage = error.message;
+        errorMessage = error.message; // Use the original error message if available
         if (error.name === 'AbortError') {
             errorMessage = 'IP location proxy request timed out.';
         } else if (errorMessage.toLowerCase().includes('failed to fetch')) {
-            errorMessage = 'Network error or CORS issue with IP location proxy (Failed to fetch). Check browser console for details.';
+            // Keep or enhance the original message for network errors
+            errorMessage = `Network error or CORS issue with IP location proxy: ${errorMessage}`;
         }
     } else {
-        errorMessage = String(error);
+        errorMessage = String(error); // For non-Error objects thrown
     }
-    // console.error(`Error fetching from IP location proxy: ${errorMessage}. Original error object:`, error);
-    return { location: null, serviceName: null, error: errorMessage };
+    console.error(`Error fetching from IP location proxy: ${errorMessage}. Original error object:`, error); // Keep console.error
+    throw new Error(errorMessage); // Re-throw as a new Error or the original if it's already an Error
   }
 }
 

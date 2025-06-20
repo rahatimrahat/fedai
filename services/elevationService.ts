@@ -30,31 +30,42 @@ async function fetchElevationViaProxy(latitude: number, longitude: number): Prom
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: `Proxy HTTP error! status: ${response.status}` }));
-      throw new Error(errorData.error || `Proxy HTTP error! status: ${response.status}`);
+      let errorMessage = `Proxy HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData && errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch (e) {
+        // Ignore if error response is not JSON, use default message
+      }
+      throw new Error(errorMessage);
     }
     
     const data = await response.json();
 
-    if (data.elevation) {
-      return { elevation: data.elevation, source: data.source || 'proxy' };
-    } else {
-      // console.warn('Elevation proxy call failed or returned no elevation data:', data.error);
-      return { elevation: null, error: data.error || 'Proxy returned no elevation data.' };
+    // data.elevation can be null for locations at sea level, this is valid.
+    // So we check for undefined to indicate a missing field / bad response.
+    if (data.elevation === undefined) {
+      // console.warn('Elevation proxy call returned no elevation data:', data.error);
+      throw new Error(data.error || 'Proxy returned no elevation data.');
     }
+    return { elevation: data.elevation, source: data.source || 'proxy' };
+
   } catch (error) {
     let errorMessage = `Error fetching elevation via proxy for ${latitude},${longitude}`;
     if (error instanceof Error) {
+        errorMessage = error.message; // Use original message
         if (error.name === 'AbortError') {
             errorMessage = `Elevation proxy request timed out for ${latitude},${longitude}.`;
-        } else if (error.message.toLowerCase().includes('failed to fetch')) {
-            errorMessage = `Network error or CORS issue with elevation proxy for ${latitude},${longitude} (Failed to fetch). Check browser console.`;
-        } else {
-             errorMessage = `${errorMessage}: ${error.message}`;
+        } else if (errorMessage.toLowerCase().includes('failed to fetch')) {
+            errorMessage = `Network error or CORS issue with elevation proxy: ${errorMessage}`;
         }
+    } else {
+        errorMessage = String(error);
     }
-    // console.error(errorMessage, error);
-    return { elevation: null, error: errorMessage };
+    console.error(`Error fetching elevation via proxy for ${latitude},${longitude}: ${errorMessage}. Original error:`, error);
+    throw new Error(errorMessage);
   }
 }
 

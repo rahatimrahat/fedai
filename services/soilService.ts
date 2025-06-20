@@ -35,39 +35,50 @@ async function fetchSoilDataViaProxy(latitude: number, longitude: number): Promi
 
     if (response.ok) {
       const result = await response.json() as SoilDataReturnType;
-      return result; // Backend now sends a well-structured response for success or specific errors
-    } else {
-      // Handle non-ok responses from the proxy itself (e.g., 500, 502, network issues not caught by try...catch)
-      const errorData = await response.json().catch(() => ({
-        error: `Proxy HTTP error! status: ${response.status}`,
-        errorCode: 'PROXY_HTTP_ERROR'
-      }));
-      return {
-          error: errorData.error || `Proxy HTTP error! status: ${response.status}`,
-          errorCode: errorData.errorCode || 'PROXY_HTTP_ERROR',
-          source: errorData.source || 'proxy' // Try to get source from errorData if backend proxy provided it
-      };
+      // Check if the backend-provided result itself signifies an error
+      if (result.error || result.errorCode) {
+        // console.warn(`Soil data proxy for ${latitude},${longitude} returned error: ${result.error || result.errorCode}`); // Optional: keep console.warn
+        throw new Error(result.error || `Soil data proxy indicated an error: ${result.errorCode || 'Unknown'}`);
+      }
+      return result; // Backend now sends a well-structured response for success
+    }
+    // Handle non-ok responses from the proxy itself (e.g., 500, 502)
+    else {
+      let errorMessage = `Soil proxy HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json(); // errorData might be SoilDataReturnType like
+        if (errorData && errorData.error) {
+          errorMessage = errorData.error;
+        } else if (errorData && errorData.errorCode) {
+          errorMessage = `Soil proxy error: ${errorData.errorCode}`;
+        }
+      } catch (e) {
+        // Use default message
+      }
+      throw new Error(errorMessage);
     }
   } catch (error) {
     let errorMessage = `Error fetching soil data via proxy for ${latitude},${longitude}`;
-    let errorCode: string = 'PROXY_FETCH_FAILED';
-    let errorSource: string = 'proxy (fetch-failed)';
-
+    // Preserve existing detailed error message construction
     if (error instanceof Error) {
+        // If it's already an error from the blocks above (e.g. from response.ok but result.error), rethrow it
+        if (error.message.startsWith("Soil data proxy indicated an error") ||
+            error.message.startsWith("Soil proxy HTTP error!") ||
+            error.message.startsWith("Soil proxy error:")) {
+             throw error;
+        }
+        // Otherwise, it's a new error (e.g. network, timeout)
+        errorMessage = error.message; // Use original message
         if (error.name === 'AbortError') {
             errorMessage = `Soil proxy request timed out for ${latitude},${longitude}.`;
-            errorCode = 'PROXY_TIMEOUT';
-        } else if (error.message.toLowerCase().includes('failed to fetch')) {
-            // This typically indicates a network issue or CORS, often client-side before request hits server,
-            // or if the server is unreachable.
-            errorMessage = `Network error or CORS issue with soil proxy for ${latitude},${longitude} (Failed to fetch). Check browser console.`;
-            errorCode = 'PROXY_NETWORK_ERROR';
-        } else {
-            // Other errors that might occur during the fetch setup or if response isn't parsable in a way that leads to !response.ok
-            errorMessage = `${errorMessage}: ${error.message}`;
+        } else if (errorMessage.toLowerCase().includes('failed to fetch')) {
+            errorMessage = `Network error or CORS issue with soil proxy: ${errorMessage}`;
         }
+    } else {
+        errorMessage = String(error);
     }
-    return { error: errorMessage, errorCode, source: errorSource };
+    console.error(`Error fetching soil data via proxy for ${latitude},${longitude}: ${errorMessage}. Original error:`, error);
+    throw new Error(errorMessage);
   }
 }
 

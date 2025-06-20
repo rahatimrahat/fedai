@@ -128,14 +128,39 @@ export const AnalysisProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (result.errorKey) {
         setAppErrorKey(result.errorKey);
         if (result.followUpQuestion) {
-            setDiseaseInfo(prev => ({...(prev || result), ...result, error: null, errorKey: null }));
+            // Set a clear structure for "error with follow-up"
+            setDiseaseInfo({
+                // Explicitly nullify fields that belong to a successful diagnosis
+                diseaseName: null,
+                definition: null,
+                possibleCauses: [],
+                structuredSolutions: [],
+                aiWeatherRelevance: null,
+                imageQualityNotes: result.imageQualityNotes, // Keep if present, might be relevant
+                differentialDiagnoses: null,
+                qualitativeConfidence: null,
+                errorCode: result.errorCode, // Preserve if backend sends it
+                // Keep the essential error info and the follow-up
+                error: result.error,
+                errorKey: result.errorKey,
+                followUpQuestion: result.followUpQuestion,
+                // Add a flag to make it clear this is not a successful result object
+                isErrorState: true,
+                // Ensure all other DiseaseInfo fields are explicitly handled or nulled
+                locationConsidered: result.locationConsidered || false,
+                weatherConsidered: result.weatherConsidered || false,
+                environmentalDataConsidered: result.environmentalDataConsidered || false,
+                similarPastCases: null, // Typically not relevant in an error/follow-up scenario
+            });
         } else {
-            setDiseaseInfo(result); 
+            // This case (errorKey without followUpQuestion) means result is an error object.
+            // Add isErrorState: true for consistency.
+            setDiseaseInfo({ ...result, isErrorState: true });
         }
       } else if (result.error && !result.errorKey && !result.followUpQuestion) {
         setAppErrorKey('analysisError'); 
         setAppError(result.error); 
-        setDiseaseInfo(result);
+        setDiseaseInfo({ ...result, isErrorState: true }); // Add isErrorState
       }
       else {
         setDiseaseInfo(result);
@@ -143,9 +168,12 @@ export const AnalysisProvider: React.FC<{ children: ReactNode }> = ({ children }
             setFollowUpAnswer(''); 
         }
       }
-    } catch (e) {
-      console.error("Critical analysis error:", e);
+    } catch (e) { // This now catches errors thrown by analyzePlantHealth (network, timeout, etc.)
+      console.error("Critical analysis error in performAnalysis:", e);
       setAppErrorKey('analysisError'); 
+      // Ensure appError is set via the useEffect listening to appErrorKey,
+      // or set it directly: setAppError(e instanceof Error ? e.message : String(e));
+      setDiseaseInfo(null); // Ensure stale data is cleared
     } finally {
       setIsLoadingAnalysis(false);
       setCurrentPipelineStep(null);
