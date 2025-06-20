@@ -61,78 +61,72 @@ export function useContextualData(userLocation: UserLocation | null) {
         }).finally(() => setIsLoadingWeather(false));
 
         const elevPromise = fetchElevation(userLocation);
-        const soilPromise = fetchSoilData(userLocation);
+        const soilPromise = fetchSoilData(userLocation); // Returns SoilDataReturnType
 
-        const envPromise = Promise.all([elevPromise, soilPromise]).then(([elevation, soil]) => {
+        // Use Promise.allSettled to handle individual promise failures without Promise.all failing fast.
+        const envPromise = Promise.allSettled([elevPromise, soilPromise]).then(([elevationResult, soilResult]) => {
             const envDataToSet: EnvironmentalData = {
                 dataTimestamp: new Date().toISOString(),
                 errorKey: null,
-                soilErrorDetail: undefined
+                error: undefined, // Initialize error message field
+                // soilErrorDetail: undefined, // This field is removed
             };
 
-            // Process elevation data
-            if (elevation?.elevation) {
-                envDataToSet.elevation = elevation.elevation;
+            let elevationErrorKey: string | null = null;
+            if (elevationResult.status === 'fulfilled' && elevationResult.value?.elevation) {
+                envDataToSet.elevation = elevationResult.value.elevation;
+            } else {
+                elevationErrorKey = 'elevationDataUnavailable'; // Potential error
             }
 
-            // Process soil data
-            if (soil) {
-                if (soil.error) {
-                    envDataToSet.errorKey = 'soilDataFetchError';
-                    envDataToSet.soilErrorDetail = soil.error;
-                    // Potentially still assign any partial data if the structure allows, though unlikely with an error
-                    if (soil.soilPH) envDataToSet.soilPH = soil.soilPH;
-                    // Add other properties if they might exist despite the error
-                } else if (soil.source === 'SoilGrids (NoDataAtLocation)') {
-                    envDataToSet.errorKey = 'soilDataNotAtLocation';
-                } else if (Object.keys(soil).filter(k => k !== 'source' && k !== 'error' && soil[k as keyof typeof soil] !== undefined).length > 0) {
-                    // Assign soil properties only if there are actual data properties
-                    envDataToSet.soilPH = soil.soilPH;
-                    envDataToSet.soilOrganicCarbon = soil.soilOrganicCarbon;
-                    envDataToSet.soilCEC = soil.soilCEC;
-                    envDataToSet.soilNitrogen = soil.soilNitrogen;
-                    envDataToSet.soilSand = soil.soilSand;
-                    envDataToSet.soilSilt = soil.soilSilt;
-                    envDataToSet.soilClay = soil.soilClay;
-                    envDataToSet.soilAWC = soil.soilAWC;
-                } else if (!envDataToSet.errorKey) { // If no specific soil error or NoDataAtLocation was set
-                    envDataToSet.errorKey = 'soilDataUnavailable'; // Soil object exists but is empty or has no usable data
+            let soilErrorKey: string | null = null;
+            if (soilResult.status === 'fulfilled' && soilResult.value) {
+                const soilVal = soilResult.value; // SoilDataReturnType
+                if (soilVal.data && Object.keys(soilVal.data).length > 0) {
+                    Object.assign(envDataToSet, soilVal.data);
+                    // if (soilVal.source) envDataToSet.soilSource = soilVal.source; // Optional: if you want to store source
+                } else if (soilVal.errorCode) { // Backend or service layer reported a structured error
+                    soilErrorKey = soilVal.errorCode;
+                    envDataToSet.error = soilVal.error; // Use message from backend/service
+                    // if (soilVal.detail) envDataToSet.soilErrorDetail = soilVal.detail; // If we decide to keep detail
+                } else { // Fallback if structure is unexpected (should not happen if service is robust)
+                    soilErrorKey = 'soilDataUnavailable';
+                    envDataToSet.error = uiStrings.soilDataUnavailable || 'Soil data is unavailable.';
                 }
-            } else { // soil is null or undefined
-                envDataToSet.errorKey = 'soilDataUnavailable';
-            }
-
-            // Determine final errorKey based on both elevation and soil states
-            const elevationFailed = !elevation?.elevation;
-            const soilFailedOrUnavailable = envDataToSet.errorKey === 'soilDataUnavailable' ||
-                                          envDataToSet.errorKey === 'soilDataFetchError' ||
-                                          envDataToSet.errorKey === 'soilDataNotAtLocation';
-            const soilHasSpecificError = envDataToSet.errorKey === 'soilDataFetchError' || envDataToSet.errorKey === 'soilDataNotAtLocation';
-
-            if (elevationFailed) {
-                if (soilFailedOrUnavailable && !soilHasSpecificError) {
-                    // Both failed generically, or soil was unavailable and elevation failed
-                    envDataToSet.errorKey = 'environmentalDataUnavailable';
-                } else if (!envDataToSet.errorKey) {
-                    // Soil was successful (or no specific soil error key was set for it), but elevation failed
-                    envDataToSet.errorKey = 'elevationDataUnavailable';
+            } else { // soilPromise itself failed or value somehow null
+                soilErrorKey = 'soilDataFetchError'; // Generic fetch error for the promise itself
+                // Try to get more specific error from rejected promise if possible
+                if (soilResult.status === 'rejected' && soilResult.reason?.error && soilResult.reason?.errorCode) {
+                    envDataToSet.error = soilResult.reason.error;
+                    soilErrorKey = soilResult.reason.errorCode;
+                } else if (soilResult.status === 'rejected' && soilResult.reason instanceof Error) {
+                     envDataToSet.error = soilResult.reason.message;
+                } else {
+                    envDataToSet.error = uiStrings.soilDataFetchError || 'Failed to fetch soil data.';
                 }
-                // If soilHasSpecificError, that error key (e.g., 'soilDataFetchError') will persist,
-                // and we don't overwrite it with 'elevationDataUnavailable' or 'environmentalDataUnavailable'.
-                // This prioritizes specific soil errors.
             }
-            // If elevation succeeded but soil failed, the soil error key is already set.
 
-            // error field will be populated by the effect below based on errorKey
+            // Determine final errorKey and error message
+            if (soilErrorKey) {
+                envDataToSet.errorKey = soilErrorKey;
+                // envDataToSet.error is already set from soil processing
+            } else if (elevationErrorKey) {
+                envDataToSet.errorKey = elevationErrorKey;
+                envDataToSet.error = uiStrings.elevationDataUnavailable || 'Elevation data is unavailable.';
+            } else {
+                envDataToSet.errorKey = null; // Both successful
+                envDataToSet.error = undefined; // Clear any potential error message
+            }
+
             setEnvironmentalData(prev => ({...(prev || { dataTimestamp: envDataToSet.dataTimestamp }), ...envDataToSet}));
-        }).catch(err => {
-            console.error("Environmental data fetch error in useContextualData (Promise.all rejection):", err);
-            // This catch handles errors from Promise.all itself (e.g., if one of the promises rejects immediately)
-            // or if there's an error within the .then() block before setEnvironmentalData.
-            setEnvironmentalData({ errorKey: 'environmentalDataUnavailable', dataTimestamp: new Date().toISOString() });
+        }).catch(err => { // Should be less likely to be hit if using allSettled properly for sub-promises
+            console.error("Critical error in environmental data processing:", err);
+            setEnvironmentalData({ errorKey: 'environmentalDataUnavailable', error: uiStrings.environmentalDataUnavailable, dataTimestamp: new Date().toISOString() });
         }).finally(() => setIsLoadingEnvironmental(false));
 
-        await Promise.allSettled([weatherPromise, envPromise]);
+        // Await all top-level promises (weatherPromise is already being handled with its own .then/.catch/.finally)
+        // envPromise handles its own setIsLoadingEnvironmental(false)
+        await Promise.allSettled([weatherPromise, envPromise]); // Keep this for overall completion if needed, or rely on individual finally blocks.
       };
       fetchData();
     } else {
@@ -162,32 +156,26 @@ export function useContextualData(userLocation: UserLocation | null) {
     }
 
     if (environmentalData?.errorKey) {
-      let localizedErrorMessage: string;
-      const errorKey = environmentalData.errorKey as keyof UiStrings;
-      const messageTemplate = uiStrings[errorKey];
-
-      if (errorKey === 'soilDataFetchError' && environmentalData.soilErrorDetail) {
-        localizedErrorMessage = typeof messageTemplate === 'function'
-          ? (messageTemplate as (detail: string) => string)(environmentalData.soilErrorDetail)
-          : typeof messageTemplate === 'string'
-          ? messageTemplate.replace('{detail}', environmentalData.soilErrorDetail)
-          : String(uiStrings.apiError);
-      } else {
-        localizedErrorMessage = typeof messageTemplate === 'function'
-          ? (messageTemplate as () => string)()
+      // If environmentalData.error is already populated (e.g. by backend's message or service layer), use it directly.
+      // Otherwise, generate from uiStrings based on errorKey.
+      if (!environmentalData.error) {
+        const messageTemplate = uiStrings[environmentalData.errorKey as keyof UiStrings];
+        const localizedErrorMessage = typeof messageTemplate === 'function'
+          ? (messageTemplate as () => string)() // Assuming no arguments for these new keys for now
           : typeof messageTemplate === 'string'
           ? messageTemplate
-          : String(uiStrings.apiError);
+          : String(uiStrings.apiError); // Fallback
+        setEnvironmentalData(prev => ({ ...prev!, error: localizedErrorMessage }));
       }
-      setEnvironmentalData(prev => ({ ...prev!, error: localizedErrorMessage }));
+      // If environmentalData.error was already set by the fetch logic, we don't overwrite it here.
     } else if (environmentalData && environmentalData.errorKey === null && environmentalData.error !== undefined) {
-      // Clear error string if errorKey is cleared
+      // Clear error string if errorKey is cleared (and error string exists)
       setEnvironmentalData(prev => {
-          const { error, soilErrorDetail, ...rest } = prev!; // Also clear soilErrorDetail
-          return rest;
+        const { error, /* soilErrorDetail is removed */ ...rest } = prev!;
+        return rest;
       });
     }
-  }, [uiStrings, weatherData?.errorKey, environmentalData?.errorKey, environmentalData?.soilErrorDetail, selectedLanguage.code]);
+  }, [uiStrings, weatherData?.errorKey, weatherData?.error, environmentalData?.errorKey, environmentalData?.error, selectedLanguage.code]);
 
 
   const handleWeatherTabChange = (tab: 'current' | 'recent' | 'historical', refToFocus: React.RefObject<HTMLButtonElement>) => {

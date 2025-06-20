@@ -1,30 +1,66 @@
 
 import React from 'react';
-import { useDataContext, UserLocation } from './DataContext.tsx'; // Added UserLocation for type clarity if needed, though not strictly for this change
+import { useDataContext } from './DataContext.tsx';
 import { useLocalizationContext } from './LocalizationContext.tsx';
 import { MapPinIcon, InformationCircleIcon } from '@/components/icons';
-import LoadingSpinner from './ui/LoadingSpinner.tsx'; // Updated path
-import Tooltip from './ui/Tooltip.tsx'; // Updated path
+import LoadingSpinner from './ui/LoadingSpinner.tsx';
+import Tooltip from './ui/Tooltip.tsx';
 
 const LocationSection: React.FC = () => {
   const {
-    locationPermission,
-    locationStatusMessage,
-    isLoadingLocation,
     userLocation, // Destructure userLocation
+    status,       // Add status
+    error,        // Add error
+    // fetchDeviceLocation, // Available from context if a button is needed here
   } = useDataContext();
   const { uiStrings } = useLocalizationContext();
 
-  const determineLocationMessageColor = () => {
-    if (locationStatusMessage === uiStrings.locationGpsSuccessMessage) return 'text-[var(--status-green-text)] font-medium';
-    if (locationStatusMessage === uiStrings.locationIpSuccessMessage) return 'text-[var(--status-yellow-text)] font-medium';
-    if (locationStatusMessage === uiStrings.locationPermissionPromptMessage || locationStatusMessage === uiStrings.locationStatusFetching) return 'text-[var(--status-blue-text)]';
-    if (locationStatusMessage === uiStrings.locationPermissionDeniedUserMessage || 
-        locationStatusMessage === uiStrings.locationPermissionUnavailableUserMessage ||
-        locationStatusMessage === uiStrings.locationErrorGeneral ||
-        (locationStatusMessage && (locationStatusMessage.includes(uiStrings.ipLocationFailed) || locationStatusMessage.includes(uiStrings.locationStatusError) ))
-    ) return 'text-[var(--status-red-text)]';
-    return 'text-[var(--text-secondary)]';
+  const renderContent = () => {
+    switch (status) {
+      case 'idle':
+      case 'checking-permission':
+        return (
+          <div className="flex items-center text-sm p-1 text-[var(--text-secondary)]">
+            <LoadingSpinner className="w-4 h-4 inline mr-2" />
+            <span>{uiStrings.locationStatusCheckingPermission || 'Checking permission...'}</span>
+          </div>
+        );
+      case 'awaiting-permission':
+        return (
+          <p className="text-sm p-1 text-[var(--status-blue-text)]">
+            {uiStrings.locationPermissionPromptMessage}
+          </p>
+        );
+      case 'fetching-ip':
+      case 'fetching-gps':
+        return (
+          <div className="flex items-center text-sm p-1 text-[var(--text-secondary)]">
+            <LoadingSpinner className="w-4 h-4 inline mr-2" />
+            <span>{uiStrings.locationStatusFetching}</span>
+          </div>
+        );
+      case 'success':
+        return (
+          <p className="text-sm p-1 text-[var(--status-green-text)] font-medium">
+            {userLocation?.accuracyMessage}
+          </p>
+        );
+      case 'error-permission':
+        return (
+          <p className="text-sm p-1 text-[var(--status-red-text)]">
+            {error || uiStrings.locationPermissionDeniedUserMessage}
+          </p>
+        );
+      case 'error-fetch':
+      case 'error-ip-fetch':
+        return (
+          <p className="text-sm p-1 text-[var(--status-red-text)]">
+            {error || uiStrings.locationErrorGeneral}
+          </p>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -38,35 +74,9 @@ const LocationSection: React.FC = () => {
           </Tooltip>
         </h2>
       </div>
-      {/*
-        The button and specific message for 'prompt' state are removed.
-        The component now relies on locationStatusMessage from the context
-        to inform the user about automatic location fetching attempts.
-      */}
-      {locationStatusMessage && (
-         <div 
-           className={`text-sm p-1 ${determineLocationMessageColor()} flex items-center`}
-           aria-live="polite"
-           aria-atomic="true"
-         >
-          {/*
-            The condition for the spinner is kept as is.
-            When locationPermission is 'prompt', isLoadingLocation will be true due to automatic fetching,
-            and locationStatusMessage will display "Attempting to automatically fetch..." or similar.
-            If a spinner is desired *specifically next to this message* during 'prompt',
-            the condition `locationPermission !== 'prompt'` would need adjustment.
-            For now, the global loading state handled by isLoadingLocation should be sufficient.
-          */}
-          {isLoadingLocation && locationPermission !== 'prompt' && <LoadingSpinner className="w-4 h-4 inline mr-2" />}
-          <span>{locationStatusMessage}</span>
-          {/* Conditional span for additional feedback on location determination failure */}
-          {!isLoadingLocation && userLocation === null && (locationStatusMessage === uiStrings.locationErrorGeneral || (locationStatusMessage && locationStatusMessage.includes(uiStrings.ipLocationFailed))) && (
-            <span className="block mt-1 text-xs text-[var(--text-accent)]">
-              This means the app cannot provide location-specific information.
-            </span>
-          )}
-        </div>
-      )}
+      <div aria-live="polite" aria-atomic="true">
+        {renderContent()}
+      </div>
     </section>
   );
 };
