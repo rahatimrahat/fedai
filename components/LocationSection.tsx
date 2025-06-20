@@ -8,14 +8,19 @@ import Tooltip from './ui/Tooltip.tsx';
 
 const LocationSection: React.FC = () => {
   const {
-    userLocation, // Destructure userLocation
-    status,       // Add status
-    error,        // Add error
-    // fetchDeviceLocation, // Available from context if a button is needed here
+    userLocation,
+    locationStatusMessage: status, // Renamed and using actual status from context
+    locationPermission, // Added to potentially refine error messages if needed
+    fetchDeviceLocation,
+    fetchIpLocationData, // Added, though may not be used directly in this change
   } = useDataContext();
   const { uiStrings } = useLocalizationContext();
 
   const renderContent = () => {
+    // The 'error' variable was mentioned in the old code comments but doesn't exist in DataContext.
+    // We'll rely on 'status' and 'locationPermission' for error handling.
+    // For 'error-fetch' and 'error-ip-fetch', a generic message is shown if specific 'error' prop isn't available.
+
     switch (status) {
       case 'idle':
       case 'checking-permission':
@@ -27,9 +32,15 @@ const LocationSection: React.FC = () => {
         );
       case 'awaiting-permission':
         return (
-          <p className="text-sm p-1 text-[var(--status-blue-text)]">
-            {uiStrings.locationPermissionPromptMessage}
-          </p>
+          <div className="text-sm p-1 text-[var(--status-blue-text)]">
+            <p>{uiStrings.locationPermissionPromptMessage}</p>
+            <button
+              onClick={() => fetchDeviceLocation()}
+              className="mt-2 px-4 py-2 text-sm font-medium text-white bg-[var(--primary-500)] rounded-md hover:bg-[var(--primary-600)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-500)]"
+            >
+              {uiStrings.shareLocationButton || "Share My Location"}
+            </button>
+          </div>
         );
       case 'fetching-ip':
       case 'fetching-gps':
@@ -47,16 +58,28 @@ const LocationSection: React.FC = () => {
         );
       case 'error-permission':
         return (
-          <p className="text-sm p-1 text-[var(--status-red-text)]">
-            {error || uiStrings.locationPermissionDeniedUserMessage}
-          </p>
+          <div className="text-sm p-1 text-[var(--status-red-text)]">
+            <p>{uiStrings.locationPermissionDeniedUserMessage}</p>
+            <button
+              onClick={() => fetchDeviceLocation()}
+              className="mt-2 px-4 py-2 text-sm font-medium text-white bg-[var(--accent-red-600)] rounded-md hover:bg-[var(--accent-red-700)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-red-600)]"
+            >
+              {uiStrings.tryAgainButton || "Try Again"}
+            </button>
+          </div>
         );
       case 'error-fetch':
       case 'error-ip-fetch':
         return (
-          <p className="text-sm p-1 text-[var(--status-red-text)]">
-            {error || uiStrings.locationErrorGeneral}
-          </p>
+          <div className="text-sm p-1 text-[var(--status-red-text)]">
+            <p>{uiStrings.locationErrorGeneral}</p>
+            <button
+              onClick={() => fetchDeviceLocation()}
+              className="mt-2 px-4 py-2 text-sm font-medium text-white bg-[var(--accent-red-600)] rounded-md hover:bg-[var(--accent-red-700)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-red-600)]"
+            >
+              {uiStrings.tryAgainButton || "Try Again"}
+            </button>
+          </div>
         );
       default:
         return null;
