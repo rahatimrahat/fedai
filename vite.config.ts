@@ -18,6 +18,16 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      server: {
+        proxy: {
+          // Proxy /api requests to the backend server
+          '/api': {
+            target: 'http://localhost:8080', // USER: Please update this port if your local backend proxy runs elsewhere
+            changeOrigin: true,
+            // secure: false, // Optional: if backend uses self-signed HTTPS
+          }
+        }
       }
     };
 });

@@ -13,9 +13,6 @@ const {
   GEOLOCATION_API_TIMEOUT_MS,
 } = require('../utils/constants');
 
-// IP Location fetching is now handled directly by the Next.js API route (pages/api/ip-location.ts)
-// The getIpLocation function has been removed from this controller.
-
 // Helper function to calculate averages from daily data
 function calculateAveragesFromDaily(dailyData) {
     if (!dailyData || (!dailyData.temperature_2m_mean && !dailyData.precipitation_sum && !dailyData.growing_degree_days) || 
@@ -192,39 +189,41 @@ const getSoilData = async (req, res) => {
     try {
         const data = await robustFetch(soilGridsApiUrl, {}, GEOLOCATION_API_TIMEOUT_MS + 6000);
 
-        // Check for valid data structure from SoilGrids
+        // Handle Invalid API Response Structure
         if (!data || !data.properties || !Array.isArray(data.properties.layers)) {
-            console.warn('SoilGrids returned invalid data structure. Data:', data);
             return res.status(502).json({
-                error: 'SoilGrids returned an invalid or unexpected data structure.',
-                source: 'SoilGrids (InvalidResponseStructure)'
+                error: 'SoilGrids returned an invalid response.',
+                errorCode: 'SOIL_DATA_INVALID_RESPONSE',
+                source: 'SoilGrids'
             });
         }
         
-        // console.log(`// DEBUG_SOIL: Processing valid SoilGrids structure for ${latitude},${longitude}. Layers count: ${data.properties.layers.length}`);
+        // Handle "No Data At Location"
+        if (data.properties.layers.length === 0 || data.properties.layers.every(l => l.depths[0]?.values?.mean === null || l.depths[0]?.values?.mean === undefined)) {
+            return res.status(200).json({
+                error: 'Soil data is not available for this specific location.',
+                errorCode: 'SOIL_DATA_NOT_AT_LOCATION',
+                source: 'SoilGrids'
+            });
+        }
+
         const soilProps = {};
         let wv0033_value = null;
         let wv1500_value = null;
         
         data.properties.layers.forEach(layer => {
-            // console.log(`// DEBUG_SOIL: Processing layer:`, JSON.stringify(layer)); // Might be too verbose
-            if (!layer || typeof layer !== 'object') {
-                console.warn(`// DEBUG_SOIL: Invalid layer object encountered: `, layer);
-                return; // Skip this iteration
-            }
-            // console.log(`// DEBUG_SOIL: Layer name: ${layer.name}, Depths: ${JSON.stringify(layer.depths)}`);
-            if (!layer.depths || !Array.isArray(layer.depths) || !layer.depths[0] || typeof layer.depths[0] !== 'object' || !layer.depths[0].values || typeof layer.depths[0].values !== 'object') {
-                console.warn(`// DEBUG_SOIL: Layer with unexpected depths/values structure:`, JSON.stringify(layer));
-                // Optional: depending on how critical layerValue is, you might 'return;' here too
+            if (!layer || typeof layer !== 'object' || !layer.depths || !Array.isArray(layer.depths) || !layer.depths[0] || typeof layer.depths[0] !== 'object' || !layer.depths[0].values || typeof layer.depths[0].values !== 'object') {
+                // console.warn(`// DEBUG_SOIL: Layer with unexpected depths/values structure:`, JSON.stringify(layer)); // Kept for debugging if necessary, but less verbose
+                return;
             }
 
             const layerValue = layer.depths[0]?.values?.mean;
             if (layerValue === null || layerValue === undefined) return;
 
             const propName = layer.name ? String(layer.name).split('_')[0] : 'unknown';
-            if (propName === 'unknown') {
-                console.warn(`// DEBUG_SOIL: Layer encountered with missing or invalid name:`, layer);
-            }
+            // if (propName === 'unknown') { // Less critical log, can be removed if too noisy
+            //     console.warn(`// DEBUG_SOIL: Layer encountered with missing or invalid name:`, layer);
+            // }
             switch(propName) {
                 case 'phh2o': soilProps.soilPH = (layerValue / 10).toFixed(1); break;
                 case 'soc': soilProps.soilOrganicCarbon = `${(layerValue / 10).toFixed(1)} g/kg`; break;
@@ -259,33 +258,130 @@ const getSoilData = async (req, res) => {
             soilProps.soilAWC = `${((wv0033_value - wv1500_value) / 20).toFixed(1)} mm`;
         }
 
+        // Standardize Success Response
         if (Object.keys(soilProps).length > 0) {
-            res.json({ ...soilProps, source: 'SoilGrids' });
+            res.json({
+                data: soilProps,
+                source: 'SoilGrids',
+                dataTimestamp: new Date().toISOString()
+            });
         } else {
-            // console.warn(`SoilGrids returned no processable data for ${latitude},${longitude}`);
-            if (data?.properties?.layers?.length === 0 || (data?.properties?.layers?.every(l => l.depths[0]?.values?.mean === null || l.depths[0]?.values?.mean === undefined))) {
-                res.json({ source: 'SoilGrids (NoDataAtLocation)' });
-            } else {
-                res.status(503).json({ error: 'SoilGrids returned no valid soil properties.', source: 'SoilGrids' });
-            }
-        }
-    } catch (error) {
-        // console.error(`Error in /api/soil proxy for ${latitude},${longitude}:`, error);
-        if (error.message && (error.message.includes('status: 404') || error.message.includes('No data at location'))) {
-            res.json({ source: 'SoilGrids (NoDataAtLocation)' });
-        } else {
-            console.error(`[SOIL_API_ERROR] Unhandled error in getSoilData for ${latitude},${longitude}:`, error);
-            res.status(500).json({
-                error: 'An unexpected error occurred while fetching soil data.',
-                detail: String(error.message || error) // Ensure detail is always a string
+            // Handle "Relevant Properties Missing" (and it wasn't a "No Data At Location" case, as that's handled above)
+            return res.status(200).json({
+                error: 'Could not find relevant soil properties for this location.',
+                errorCode: 'SOIL_DATA_PROPERTIES_MISSING',
+                source: 'SoilGrids'
             });
         }
+    } catch (error) {
+    const originalErrorMessage = String(error.message || error);
+    // Log the full original error for server-side debugging
+    console.error(`[SOIL_API_ERROR] Error in getSoilData for ${latitude},${longitude}: Remote API Error: ${originalErrorMessage}, Full Error Object:`, error);
+
+    if (originalErrorMessage.startsWith('HTTP error! status: 404')) {
+        return res.status(404).json({
+            error: 'SoilGrids service indicated that the requested resource was not found. This might be due to invalid coordinates or parameters for the SoilGrids API.',
+            errorCode: 'SOIL_DATA_API_NOT_FOUND',
+            source: 'SoilGrids',
+            detail: originalErrorMessage
+        });
+    } else if (originalErrorMessage.startsWith('HTTP error! status: 400')) {
+        return res.status(400).json({
+            error: 'SoilGrids service indicated a bad request. Please check the latitude/longitude values and other parameters.',
+            errorCode: 'SOIL_DATA_API_BAD_REQUEST',
+            source: 'SoilGrids',
+            detail: originalErrorMessage
+        });
+    } else if (originalErrorMessage.includes('timed out')) { // Check for timeout string from robustFetch
+         return res.status(504).json({
+            error: 'The request to SoilGrids API timed out. The service may be temporarily unavailable or slow.',
+            errorCode: 'SOIL_DATA_API_TIMEOUT',
+            source: 'SoilGrids',
+            detail: originalErrorMessage
+        });
+    } else if (originalErrorMessage.startsWith('HTTP error! status:')) { // Catch other HTTP errors from robustFetch
+        // Extract status if possible, otherwise default to 502 (Bad Gateway, as proxy received invalid response from upstream)
+        const match = originalErrorMessage.match(/status: (\d+)/);
+        const upstreamStatus = match ? parseInt(match[1], 10) : 502;
+        const proxyStatus = (upstreamStatus >= 500 && upstreamStatus <= 599) ? 502 : upstreamStatus; // If 5xx from upstream, proxy returns 502. Otherwise, pass through client errors like 4xx.
+
+        return res.status(proxyStatus).json({
+            error: `Failed to fetch soil data from SoilGrids due to an upstream HTTP error: ${upstreamStatus}.`,
+            errorCode: 'SOIL_DATA_API_HTTP_ERROR', // A new generic code for unhandled HTTP errors from SoilGrids
+            source: 'SoilGrids',
+            detail: originalErrorMessage
+        });
     }
+
+    // Default fallback for other errors (e.g., unexpected robustFetch errors, or programming errors within the try block if robustFetch didn't even run)
+    res.status(500).json({
+        error: 'Failed to fetch or process soil data from the provider due to an unexpected error.',
+        errorCode: 'SOIL_DATA_FETCH_FAILED', // General failure for non-HTTP, non-timeout issues from robustFetch, or other unexpected errors
+        detail: originalErrorMessage
+    });
+    }
+};
+
+// --- IP Location Controller ---
+const getIpLocation = async (req, res) => {
+  let primaryErrorDetails = null;
+  try {
+    // Attempt 1: ipapi.co
+    // robustFetch will throw if response.ok is false or on timeout
+    const data = await robustFetch(IPAPI_CO_URL, { headers: {'User-Agent': 'Fedai-Backend-Proxy/1.0'} }, GEOLOCATION_API_TIMEOUT_MS);
+    if (data.error) { // ipapi.co specific error field in a 200 OK response
+      throw new Error(data.reason || 'ipapi.co returned an error in a 200 OK response');
+    }
+    if (data.latitude && data.longitude) {
+      return res.json({
+        latitude: data.latitude,
+        longitude: data.longitude,
+        city: data.city,
+        country: data.country_name,
+        countryCode: data.country_code,
+        serviceName: 'ipapi.co'
+      });
+    }
+    // If 200 OK but no lat/lon or expected error field
+    throw new Error('ipapi.co did not return valid latitude/longitude in a 200 OK response');
+  } catch (error) {
+    primaryErrorDetails = error.message || String(error);
+    console.warn(`IP Location: Primary service (ipapi.co) failed or returned unusable data: ${primaryErrorDetails}`);
+
+    // Attempt 2: ip-api.com (Fallback)
+    try {
+      // robustFetch will throw if response.ok is false or on timeout
+      const dataFallback = await robustFetch(IP_API_COM_URL, { headers: {'User-Agent': 'Fedai-Backend-Proxy/1.0'} }, GEOLOCATION_API_TIMEOUT_MS);
+      if (dataFallback.status === 'fail') { // ip-api.com specific error field
+        throw new Error(dataFallback.message || 'ip-api.com indicated failure');
+      }
+      if (dataFallback.status === 'success' && dataFallback.lat && dataFallback.lon) {
+        return res.json({
+          latitude: dataFallback.lat,
+          longitude: dataFallback.lon,
+          city: dataFallback.city,
+          country: dataFallback.country,
+          countryCode: dataFallback.countryCode,
+          serviceName: 'ip-api.com'
+        });
+      }
+      // If 200 OK but no success status or lat/lon
+      throw new Error('ip-api.com did not return success or valid location data in a 200 OK response');
+    } catch (fallbackError) {
+      const fallbackErrorDetails = fallbackError.message || String(fallbackError);
+      console.error(`IP Location: Fallback service (ip-api.com) also failed or returned unusable data: ${fallbackErrorDetails}`);
+      return res.status(503).json({
+        error: 'All IP location services failed or returned unusable data.',
+        primaryServiceError: primaryErrorDetails, // Renamed for clarity
+        fallbackServiceError: fallbackErrorDetails // Renamed for clarity
+      });
+    }
+  }
 };
 
 
 module.exports = {
-  // getIpLocation, // Removed
+  getIpLocation,
   getWeatherData,
   getElevationData,
   getSoilData,
