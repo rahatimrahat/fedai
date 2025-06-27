@@ -165,6 +165,23 @@ describe('LocationSection', () => {
     expect(mockFetchDeviceLocation).toHaveBeenCalledTimes(1);
   });
 
+  test('does not render interactive buttons in "fetching-ip" state', () => {
+    mockUseDataContext.mockReturnValue({
+      userLocation: null,
+      locationStatusMessage: 'fetching-ip',
+      locationPermission: 'prompt',
+      isLoadingLocation: true,
+      fetchDeviceLocation: mockFetchDeviceLocation,
+      fetchIpLocationData: mockFetchIpLocationData,
+      // ... other context values
+    });
+
+    render(<LocationSection />);
+    expect(screen.queryByText(defaultUiStrings.shareLocationButton)).not.toBeInTheDocument();
+    expect(screen.queryByText(defaultUiStrings.tryAgainButton)).not.toBeInTheDocument();
+    expect(screen.getByText(defaultUiStrings.locationStatusFetching)).toBeInTheDocument();
+  });
+
   test('does not render interactive buttons in "fetching-gps" state', () => {
     mockUseDataContext.mockReturnValue({
       userLocation: null,
