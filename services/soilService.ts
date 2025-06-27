@@ -11,7 +11,7 @@ const PROXY_SOIL_ENDPOINT = '/api/soil';
 
 // This type defines what the fetchSoilDataViaProxy returns and what is cached
 export type SoilDataReturnType = {
-  data?: Partial<Pick<EnvironmentalData, 'soilPH' | 'soilOrganicCarbon' | 'soilCEC' | 'soilNitrogen' | 'soilSand' | 'silt' | 'soilClay' | 'soilAWC'>>;
+  data?: Partial<Pick<EnvironmentalData, 'soilPH' | 'soilOrganicCarbon' | 'soilCEC' | 'soilNitrogen' | 'soilSand' | 'soilSilt' | 'soilClay' | 'soilAWC'>>;
   source?: string;
   dataTimestamp?: string; // From backend success response
   error?: string;         // User-friendly error message from backend
