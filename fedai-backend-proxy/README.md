@@ -72,9 +72,9 @@ The proxy exposes several endpoints under the `/api` path:
 
 *   **`/api/gemini-proxy` (POST):** Forwards requests to the Google Gemini API.
 *   **`/api/gemini-proxy/status` (GET):** Checks Gemini API status.
-*   **`/api/weather` (GET):** Proxies requests to a weather service.
-*   **`/api/soil` (GET):** Proxies requests to a soil data service.
-*   **`/api/elevation` (GET):** Proxies requests to an elevation service.
+*   **`/api/weather` (POST):** Proxies requests to a weather service.
+*   **`/api/soil` (POST):** Proxies requests to a soil data service.
+*   **`/api/elevation` (POST):** Proxies requests to an elevation service.
 *   **`/api/ip-location` (GET):** Provides approximate location via IP.
 
 Refer to `src/api/routes/` and `src/api/controllers/` for details.
