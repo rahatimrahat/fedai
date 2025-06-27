@@ -11,10 +11,51 @@ const {
   OPEN_TOPO_DATA_API_URL_PREFIX,
   SOILGRIDS_API_URL_PREFIX,
   GEOLOCATION_API_TIMEOUT_MS,
+  IP_API_COM_URL, // Added for IP Geolocation
 } = require('../utils/constants');
 
-// IP Location fetching is now handled directly by the Next.js API route (pages/api/ip-location.ts)
-// The getIpLocation function has been removed from this controller.
+// Controller method to get IP-based geolocation
+const getIpLocation = async (req, res) => {
+  // ip-api.com uses the source IP of the request to the API, so no IP needs to be forwarded.
+  // However, it's good practice to be aware of the user's IP if needed for other services,
+  // which can be accessed via req.ip or headers like 'x-forwarded-for'.
+  // For ip-api.com, we don't need to pass any specific IP in the query if we want the location of the proxy server's requester.
+  // If we want the location of THIS server, we'd use the parameter-less version.
+  // The current URL in constants.js doesn't take an IP, so it's for the requester to the proxy.
+  // If the request to this proxy comes from the user's browser, req.ip will be the user's IP.
+  // If this proxy is behind another load balancer, req.ip might be the load balancer's IP.
+  // `x-forwarded-for` is usually more reliable for the original client IP.
+  // For this service, no specific IP from `req` is needed for the URL.
+
+  try {
+    // console.log(`Fetching IP location from: ${IP_API_COM_URL}`);
+    const data = await robustFetch(IP_API_COM_URL, {}, GEOLOCATION_API_TIMEOUT_MS);
+
+    if (data.status === 'success') {
+      res.json({
+        latitude: data.lat,
+        longitude: data.lon,
+        city: data.city,
+        country: data.country,
+        countryCode: data.countryCode,
+        source: 'ip', // Explicitly set source
+        serviceName: 'ip-api.com', // Identify the service provider
+      });
+    } else {
+      // console.error('IP Geolocation API error:', data.message || 'Failed to fetch location data.');
+      res.status(502).json({ // 502 Bad Gateway if the external service fails
+        error: data.message || 'Failed to fetch location data from ip-api.com.',
+        errorCode: 'IP_LOCATION_API_FAILED',
+      });
+    }
+  } catch (error) {
+    // console.error('Error in getIpLocation controller:', error);
+    res.status(500).json({
+      error: error.message || 'An unexpected error occurred while fetching IP location.',
+      errorCode: 'IP_LOCATION_CONTROLLER_ERROR',
+    });
+  }
+};
 
 // Helper function to calculate averages from daily data
 function calculateAveragesFromDaily(dailyData) {
@@ -289,7 +330,7 @@ const getSoilData = async (req, res) => {
 
 
 module.exports = {
-  // getIpLocation, // Removed
+  getIpLocation,
   getWeatherData,
   getElevationData,
   getSoilData,

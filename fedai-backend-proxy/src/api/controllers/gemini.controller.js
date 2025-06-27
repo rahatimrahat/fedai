@@ -35,12 +35,69 @@ module.exports = (ai) => {
         followUpAnswer 
       } = req.body;
 
-      if (!image || !image.base64 || !image.mimeType) {
-        return res.status(400).json({ error: 'Missing or invalid image data.', errorKey: 'ANALYSIS_ERROR' });
+      // --- Input Validation ---
+      const errors = [];
+      if (!image || typeof image.base64 !== 'string' || !image.base64.trim() || typeof image.mimeType !== 'string' || !image.mimeType.trim()) {
+        errors.push('Request must include valid image data (base64 string and mimeType string).');
+      } else {
+        // Basic check for common image mime types
+        if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'].includes(image.mimeType.toLowerCase())) {
+          errors.push(`Unsupported image mimeType: ${image.mimeType}. Supported types are JPEG, PNG, WebP, GIF, HEIC, HEIF.`);
+        }
+        // Basic base64 check (not exhaustive)
+        // A more robust check might involve regex or trying to decode a small part
+        if (image.base64.length < 100 || image.base64.includes(' ')) { // Arbitrary short length, spaces not typical
+            errors.push('Image base64 data appears invalid or too short.');
+        }
       }
-      if (!language || !language.geminiPromptLanguage) {
-        return res.status(400).json({ error: 'Missing or invalid language information.', errorKey: 'ANALYSIS_ERROR' });
+
+      if (!language || typeof language.code !== 'string' || !language.code.trim() || typeof language.geminiPromptLanguage !== 'string' || !language.geminiPromptLanguage.trim()) {
+        errors.push('Request must include valid language information (code string and geminiPromptLanguage string).');
       }
+
+      if (userDescription && typeof userDescription !== 'string') {
+        errors.push('If provided, userDescription must be a string.');
+      }
+      // Optional: Add length limit for userDescription
+      // if (userDescription && userDescription.length > 2000) {
+      //   errors.push('userDescription exceeds maximum length of 2000 characters.');
+      // }
+
+      if (userLocation) {
+        if (typeof userLocation.latitude !== 'number' || typeof userLocation.longitude !== 'number') {
+          errors.push('If userLocation is provided, it must include numeric latitude and longitude.');
+        } else {
+          if (userLocation.latitude < -90 || userLocation.latitude > 90) {
+            errors.push('Invalid latitude. Must be between -90 and 90.');
+          }
+          if (userLocation.longitude < -180 || userLocation.longitude > 180) {
+            errors.push('Invalid longitude. Must be between -180 and 180.');
+          }
+        }
+      }
+
+      // For weatherData and environmentalData, we'll do a basic check for object type if present.
+      // Deeper validation of their internal structure can be extensive and might be overkill
+      // if the Gemini prompt is robust enough to handle partially missing sub-fields.
+      if (weatherData && typeof weatherData !== 'object') {
+        errors.push('If provided, weatherData must be an object.');
+      }
+      if (environmentalData && typeof environmentalData !== 'object') {
+        errors.push('If provided, environmentalData must be an object.');
+      }
+
+      if (followUpAnswer && typeof followUpAnswer !== 'string') {
+        errors.push('If provided, followUpAnswer must be a string.');
+      }
+      // Optional: Add length limit for followUpAnswer
+      // if (followUpAnswer && followUpAnswer.length > 1000) {
+      //    errors.push('followUpAnswer exceeds maximum length of 1000 characters.');
+      // }
+
+      if (errors.length > 0) {
+        return res.status(400).json({ error: errors.join(' '), errorKey: 'INVALID_INPUT' });
+      }
+      // --- End Input Validation ---
       
       const currentJsonOutputStructure = getJsonOutputStructure(userLocation, weatherData, environmentalData);
       const currentTaskInstruction = getTaskInstruction(userLocation, weatherData, environmentalData);
