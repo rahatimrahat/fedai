@@ -14,7 +14,7 @@ export function useLocationLogic() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchIpLocationData = useCallback(async (isEnrichmentOnly = false) => {
-    if (userLocation?.source === 'gps' && !isEnrichmentOnly) {
+    if (!isEnrichmentOnly && userLocation?.source === 'gps') {
         // If we already have GPS and this is not an enrichment call, no need to fetch IP.
         return;
     }
@@ -33,20 +33,20 @@ export function useLocationLogic() {
         accuracyMessage: uiStrings.locationStatusSuccessIp(location.city || 'Unknown City', location.country || 'Unknown Country', serviceName)
       };
 
-      if (isEnrichmentOnly && userLocation?.source === 'gps') {
-          // This is IP enrichment for an existing GPS location.
-          setUserLocation(prevGpsLocation => ({
-              ...prevGpsLocation!, // GPS location should exist if source is 'gps'
-              city: ipLocationWithDetail.city,
-              country: ipLocationWithDetail.country,
-              countryCode: ipLocationWithDetail.countryCode,
-              // Keep the GPS accuracy message as primary, but enrich data
-              accuracyMessage: prevGpsLocation?.accuracyMessage
-          }));
-          // Do not change global status here for enrichment, GPS success message should be dominant.
-      } else {
-          // This is an initial IP fetch or a fallback IP fetch.
-          setUserLocation(ipLocationWithDetail);
+      setUserLocation(prev => {
+          if (isEnrichmentOnly && prev?.source === 'gps') {
+              // Enrich existing GPS data with city/country info
+              return {
+                  ...prev,
+                  city: ipLocationWithDetail.city,
+                  country: ipLocationWithDetail.country,
+                  countryCode: ipLocationWithDetail.countryCode,
+                  accuracyMessage: prev.accuracyMessage,
+              };
+          }
+          return ipLocationWithDetail;
+      });
+      if (!isEnrichmentOnly) {
           setStatus('success'); // IP fetch was successful
       }
     } else {
