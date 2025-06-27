@@ -793,7 +793,7 @@ const UI_STRINGS_ES: UiStrings = {
   serviceElevation: "Servicio de Elevación",
   serviceSoil: "Servicio de Datos del Suelo",
   serviceAI: "Servicio de Análisis IA",
-  aiAnalysisInProgressMessage: "El análisis de IA está en curso. Este paso puede tomar unos momentos, especialmente para imágenes complexas o datos contextuales detallados.",
+  aiAnalysisInProgressMessage: "El análisis de IA está en curso. Este paso puede tomar unos momentos, especialmente para imágenes complejas o datos contextuales detallados.",
   solutionEstimatedBudgetLow: "Bajo",
   solutionEstimatedBudgetMedium: "Medio",
   solutionEstimatedBudgetHigh: "Alto",
