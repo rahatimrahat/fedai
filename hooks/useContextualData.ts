@@ -51,10 +51,10 @@ export function useContextualData(userLocation: UserLocation | null) {
             soilCEC: null,
             soilNitrogen: null,
             soilSand: null,
-            silt: null,
+            soilSilt: null,
             soilClay: null,
             soilAWC: null,
-            errorKey: null, 
+            errorKey: null,
             error: undefined
         }));
         
