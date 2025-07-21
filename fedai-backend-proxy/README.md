@@ -39,6 +39,7 @@ Before you begin, ensure you have the following installed on your system:
     *   Add your Google Gemini API key and desired port:
         ```env
         GEMINI_API_KEY=YOUR_ACTUAL_GEMINI_API_KEY_HERE
+        OPEN_PLANTBOOK_API_KEY=YOUR_OPENPLANTBOOK_API_KEY_HERE
         PORT=3001
         # Add other API keys if needed for proxied services
         ```
@@ -75,6 +76,7 @@ The proxy exposes several endpoints under the `/api` path:
 *   **`/api/weather` (POST):** Proxies requests to a weather service.
 *   **`/api/soil` (POST):** Proxies requests to a soil data service.
 *   **`/api/elevation` (POST):** Proxies requests to an elevation service.
+*   **`/api/plant/:id` (GET):** Fetches plant details from the OpenPlantBook API.
 *   **`/api/ip-location` (GET):** Provides approximate location via IP.
 
 Refer to `src/api/routes/` and `src/api/controllers/` for details.

@@ -16,4 +16,7 @@ router.post('/elevation', dataController.getElevationData);
 // Soil Data Route
 router.post('/soil', dataController.getSoilData);
 
+// OpenPlantBook Plant Data Route
+router.get('/plant/:id', dataController.getPlantData);
+
 module.exports = router;

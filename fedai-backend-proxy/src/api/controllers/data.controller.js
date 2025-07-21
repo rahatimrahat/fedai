@@ -10,6 +10,7 @@ const {
   OPEN_ELEVATION_API_URL_PREFIX,
   OPEN_TOPO_DATA_API_URL_PREFIX,
   SOILGRIDS_API_URL_PREFIX,
+  OPEN_PLANTBOOK_API_URL_PREFIX,
   GEOLOCATION_API_TIMEOUT_MS,
 } = require('../utils/constants');
 
@@ -325,10 +326,33 @@ const getSoilData = async (req, res) => {
     }
 };
 
+// --- OpenPlantBook Plant Data Controller ---
+const getPlantData = async (req, res) => {
+    const { id } = req.params;
+    if (!id) {
+        return res.status(400).json({ error: 'Plant ID is required.' });
+    }
+    if (!process.env.OPEN_PLANTBOOK_API_KEY) {
+        return res.status(503).json({ error: 'OpenPlantBook API key not configured on server.' });
+    }
+
+    const plantUrl = `${OPEN_PLANTBOOK_API_URL_PREFIX}${id}/`;
+    try {
+        const data = await robustFetch(plantUrl, {
+            headers: { 'Authorization': `Token ${process.env.OPEN_PLANTBOOK_API_KEY}` }
+        });
+        res.json(data);
+    } catch (error) {
+        console.error(`[PLANTBOOK_API_ERROR] ${error.message}`);
+        res.status(500).json({ error: 'Failed to fetch plant data from OpenPlantBook.' });
+    }
+};
+
 
 module.exports = {
   getIpLocation,
   getWeatherData,
   getElevationData,
   getSoilData,
+  getPlantData,
 };
