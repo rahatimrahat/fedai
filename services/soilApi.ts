@@ -1,28 +1,27 @@
-import { SoilClient } from 'openepi-client';
 import { TestServiceResult } from '@/types';
+import { SoilGridsClient } from 'soilgrids-client';
 
-const client = new SoilClient();
+const client = new SoilGridsClient();
 
 export const fetchSoilData = async (lat: number, lon: number) => {
-  const { data, error } = await client.getSoilProperty({
-    lat: lat,
-    lon: lon,
-    depths: "0-5cm,5-15cm",
-    properties: ["bdod", "phh2o", "soc", "cec", "nitrogen", "sand", "silt", "clay"],
-    values: "mean"
+  const { data, error } = await client.getSoilProperties({
+    lat,
+    lon,
+    properties: ["bdod", "cec", "cfvo", "clay", "nitrogen", "ocd", "ocs", "phh2o", "sand", "silt", "soc"],
+    depths: ["0-5cm", "5-15cm"],
+    values: ["mean", "Q0.5", "Q0.05", "Q0.95", "uncertainty"]
   });
 
   if (error) {
     console.error("Failed to fetch soil data:", error);
     throw new Error('Failed to fetch soil data.');
   }
-  return data?.properties;
+  return data?.properties.layers;
 };
 
 export const testSoilService = async (): Promise<TestServiceResult> => {
   try {
-    // Perform a test query to Open-Meteo's soil API
-    const { data, error } = await client.getSoilProperty({
+    const { data, error } = await client.getSoilProperties({
         lat: 52.52,
         lon: 13.41,
         properties: ["bdod"],
