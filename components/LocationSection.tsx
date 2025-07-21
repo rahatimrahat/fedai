@@ -33,7 +33,8 @@ const LocationSection: React.FC = () => {
       case 'awaiting-permission':
         return (
           <div className="text-sm p-1 text-[var(--status-blue-text)]">
-            <p>{uiStrings.locationPermissionPromptMessage}</p>
+            <p className="font-semibold text-base mb-2">{uiStrings.locationPermissionTitle}</p>
+            <p className="mb-3">{uiStrings.locationPermissionPromptMessage}</p>
             <button
               onClick={() => fetchDeviceLocation()}
               className="mt-2 px-4 py-2 text-sm font-medium text-white bg-[var(--primary-500)] rounded-md hover:bg-[var(--primary-600)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-500)]"

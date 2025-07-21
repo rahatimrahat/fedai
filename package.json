@@ -12,29 +12,30 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "framer-motion": "^11.2.10",
+    "lodash-es": "4.17.21",
+    "openepi-client": "^1.1.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-window": "^1.8.11",
     "react-swipeable": "^7.0.1",
-    "framer-motion": "^11.2.10",
-    "lodash-es": "4.17.21"
+    "react-window": "^1.8.11"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.0.0",
     "@types/node": "^22.14.0",
-    "typescript": "~5.7.2",
-    "vite": "^6.2.0",
+    "@typescript-eslint/eslint-plugin": "^7.17.0",
+    "@typescript-eslint/parser": "^7.17.0",
     "@vitejs/plugin-react": "^4.3.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.9",
-    "@typescript-eslint/eslint-plugin": "^7.17.0",
-    "@typescript-eslint/parser": "^7.17.0",
-    "prettier": "^3.2.5",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
-    "vitest": "^1.6.0",
-    "@testing-library/react": "^16.0.0"
+    "prettier": "^3.2.5",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0",
+    "vitest": "^1.6.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,css,md,json}": "prettier --write",
