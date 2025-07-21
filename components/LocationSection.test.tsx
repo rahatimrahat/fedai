@@ -6,15 +6,15 @@ import { useDataContext } from './DataContext';
 import { useLocalizationContext } from './LocalizationContext';
 
 // Mock useDataContext
-jest.mock('./DataContext');
-const mockUseDataContext = useDataContext as jest.Mock;
+vi.mock('./DataContext');
+const mockUseDataContext = useDataContext as unknown as vi.Mock;
 
 // Mock useLocalizationContext
-jest.mock('./LocalizationContext');
-const mockUseLocalizationContext = useLocalizationContext as jest.Mock;
+vi.mock('./LocalizationContext');
+const mockUseLocalizationContext = useLocalizationContext as unknown as vi.Mock;
 
-const mockFetchDeviceLocation = jest.fn();
-const mockFetchIpLocationData = jest.fn(); // Though not directly used by buttons, good to have
+const mockFetchDeviceLocation = vi.fn();
+const mockFetchIpLocationData = vi.fn(); // Though not directly used by buttons, good to have
 
 const defaultUiStrings = {
   locationInfoTitle: 'Location Information',
@@ -36,12 +36,12 @@ const defaultUiStrings = {
 describe('LocationSection', () => {
   beforeEach(() => {
     // Reset mocks before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Default mock implementation for localization
     mockUseLocalizationContext.mockReturnValue({
       uiStrings: defaultUiStrings,
       language: 'en',
-      setLanguage: jest.fn(),
+      setLanguage: vi.fn(),
     });
   });
 
@@ -60,7 +60,7 @@ describe('LocationSection', () => {
       isLoadingEnvironmental: false,
       isDataFullyLoaded: false,
       weatherDisplayTab: 'current',
-      handleWeatherTabChange: jest.fn(),
+      handleWeatherTabChange: vi.fn(),
       weatherTabCurrentRef: React.createRef<HTMLButtonElement>(),
       weatherTabRecentRef: React.createRef<HTMLButtonElement>(),
       weatherTabHistoricalRef: React.createRef<HTMLButtonElement>(),
@@ -90,7 +90,7 @@ describe('LocationSection', () => {
       isLoadingEnvironmental: false,
       isDataFullyLoaded: false,
       weatherDisplayTab: 'current',
-      handleWeatherTabChange: jest.fn(),
+      handleWeatherTabChange: vi.fn(),
       weatherTabCurrentRef: React.createRef<HTMLButtonElement>(),
       weatherTabRecentRef: React.createRef<HTMLButtonElement>(),
       weatherTabHistoricalRef: React.createRef<HTMLButtonElement>(),
@@ -122,7 +122,7 @@ describe('LocationSection', () => {
       isLoadingEnvironmental: false,
       isDataFullyLoaded: false,
       weatherDisplayTab: 'current',
-      handleWeatherTabChange: jest.fn(),
+      handleWeatherTabChange: vi.fn(),
       weatherTabCurrentRef: React.createRef<HTMLButtonElement>(),
       weatherTabRecentRef: React.createRef<HTMLButtonElement>(),
       weatherTabHistoricalRef: React.createRef<HTMLButtonElement>(),
@@ -151,7 +151,7 @@ describe('LocationSection', () => {
       isLoadingEnvironmental: false,
       isDataFullyLoaded: false,
       weatherDisplayTab: 'current',
-      handleWeatherTabChange: jest.fn(),
+      handleWeatherTabChange: vi.fn(),
       weatherTabCurrentRef: React.createRef<HTMLButtonElement>(),
       weatherTabRecentRef: React.createRef<HTMLButtonElement>(),
       weatherTabHistoricalRef: React.createRef<HTMLButtonElement>(),
