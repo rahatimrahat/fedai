@@ -1,7 +1,7 @@
 // fedai-backend-proxy/src/api/utils/constants.js
 
 const IPAPI_CO_URL = 'https://ipapi.co/json/';
-const IP_API_COM_URL = 'https://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,lat,lon,timezone,query';
+const IP_API_COM_URL = 'http://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,lat,lon,timezone,query';
 const OPEN_METEO_API_BASE = 'https://api.open-meteo.com/v1';
 const OPEN_METEO_ARCHIVE_API_BASE = 'https://archive-api.open-meteo.com/v1/archive';
 const OPEN_ELEVATION_API_URL_PREFIX = 'https://api.open-elevation.com/api/v1/lookup?locations=';

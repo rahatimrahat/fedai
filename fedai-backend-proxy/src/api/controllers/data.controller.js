@@ -16,43 +16,49 @@ const {
 
 // IP Location fetching is now handled directly by the Next.js API route (pages/api/ip-location.ts)
 const getIpLocation = async (req, res) => {
+    const errors = {};
+
+    // Primary provider: ipapi.co
     try {
-        // Primary provider: ipapi.co
-        const primaryUrl = IPAPI_CO_URL;
-        const primaryData = await robustFetch(primaryUrl, {}, GEOLOCATION_API_TIMEOUT_MS);
-
-        if (primaryData && !primaryData.error) {
-            // ipapi.co can sometimes return a response with an error field, e.g. { "error": true, "reason": "Rate Limited" }
-            // It can also return a valid response but with no city/country for reserved IPs.
-            if (primaryData.latitude && primaryData.longitude) {
-                return res.json({
-                    latitude: primaryData.latitude,
-                    longitude: primaryData.longitude,
-                    city: primaryData.city || 'Unknown', // Fallback for missing city
-                    country: primaryData.country_name || 'Unknown', // Fallback for missing country
-                    source: 'ipapi.co'
-                });
-            }
+        const primaryData = await robustFetch(IPAPI_CO_URL, {}, GEOLOCATION_API_TIMEOUT_MS);
+        if (primaryData && !primaryData.error && primaryData.latitude && primaryData.longitude) {
+            return res.json({
+                latitude: primaryData.latitude,
+                longitude: primaryData.longitude,
+                city: primaryData.city || 'Unknown',
+                country: primaryData.country_name || 'Unknown',
+                countryCode: primaryData.country_code,
+                serviceName: 'ipapi.co'
+            });
         }
+        if (primaryData && primaryData.error) {
+            errors.ipapi = primaryData.reason || 'ipapi.co returned an error';
+        }
+    } catch (err) {
+        errors.ipapi = err.message;
+    }
 
-        // Fallback provider: ip-api.com
-        const fallbackUrl = IP_API_COM_URL;
-        const fallbackData = await robustFetch(fallbackUrl, {}, GEOLOCATION_API_TIMEOUT_MS);
-
+    // Fallback provider: ip-api.com
+    try {
+        const fallbackData = await robustFetch(IP_API_COM_URL, {}, GEOLOCATION_API_TIMEOUT_MS);
         if (fallbackData && fallbackData.status === 'success') {
             return res.json({
                 latitude: fallbackData.lat,
                 longitude: fallbackData.lon,
                 city: fallbackData.city,
                 country: fallbackData.country,
-                source: 'ip-api.com'
+                countryCode: fallbackData.countryCode,
+                serviceName: 'ip-api.com'
             });
         }
-
-        res.status(502).json({ error: 'Both IP location services failed.', details: { primary: primaryData, fallback: fallbackData } });
-    } catch (error) {
-        res.status(500).json({ error: `IP location lookup failed: ${error.message}` });
+        if (fallbackData && fallbackData.status === 'fail') {
+            errors['ip-api'] = fallbackData.message || 'ip-api.com returned status: fail';
+        }
+    } catch (err) {
+        errors['ip-api'] = err.message;
     }
+
+    res.status(502).json({ error: 'Both IP location services failed.', details: errors });
 };
 
 // Helper function to calculate averages from daily data

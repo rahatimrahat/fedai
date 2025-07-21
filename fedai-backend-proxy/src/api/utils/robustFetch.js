@@ -2,6 +2,8 @@
 
 const fetch = require('node-fetch');
 const { GEOLOCATION_API_TIMEOUT_MS } = require('./constants');
+const { HttpsProxyAgent } = require('https-proxy-agent');
+const { HttpProxyAgent } = require('http-proxy-agent');
 
 /**
  * A robust fetch helper with a timeout mechanism.
@@ -15,7 +17,13 @@ async function robustFetch(url, options = {}, timeout = GEOLOCATION_API_TIMEOUT_
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
-    const response = await fetch(url, { ...options, signal: controller.signal });
+    const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+    let agent;
+    if (proxyUrl) {
+      agent = url.startsWith('https') ? new HttpsProxyAgent(proxyUrl) : new HttpProxyAgent(proxyUrl);
+    }
+
+    const response = await fetch(url, { ...options, agent, signal: controller.signal });
     clearTimeout(timeoutId);
 
     if (!response.ok) {
