@@ -4,7 +4,7 @@ import { type UiStrings, type ServiceStatusInfo, type TestServiceResult } from '
 import { testIpLocationService } from '@/services/ipLocationService';
 import { testWeatherService } from '@/services/weatherService';
 import { testElevationService } from '@/services/elevationService';
-import { testSoilService } from '@/services/soilService';
+import { testSoilService } from '@/services/soilApi';
 import { testGeminiService } from '@/services/geminiService';
 // No need to import useLocalizationContext here, as App.tsx will pass uiStrings to ServiceStatusFooter
 
