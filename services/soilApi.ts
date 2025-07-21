@@ -37,14 +37,14 @@ export const testSoilService = async (): Promise<TestServiceResult> => {
     });
 
     if (error) {
-      return { status: 'DEGRADED', details: 'Test query failed' };
+      return { status: 'ERROR', details: 'Test query failed' };
     }
 
     if (data) {
-      return { status: 'OPERATIONAL', details: 'Service is operational' };
+      return { status: 'UP', details: 'Service is operational' };
     }
 
-    return { status: 'DEGRADED', details: 'No data returned from service' };
+    return { status: 'ERROR', details: 'No data returned from service' };
   } catch (error) {
     return { status: 'DOWN', details: 'Service is unreachable' };
   }
