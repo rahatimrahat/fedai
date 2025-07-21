@@ -6,7 +6,7 @@ const OPEN_METEO_API_BASE = 'https://api.open-meteo.com/v1';
 const OPEN_METEO_ARCHIVE_API_BASE = 'https://archive-api.open-meteo.com/v1/archive';
 const OPEN_ELEVATION_API_URL_PREFIX = 'https://api.open-elevation.com/api/v1/lookup?locations=';
 const OPEN_TOPO_DATA_API_URL_PREFIX = 'https://api.opentopodata.org/v1/etopo1?locations=';
-const SOILGRIDS_API_URL_PREFIX = 'https://rest.soilgrids.org/soilgrids/v2.0/properties/query';
+const SOILGRIDS_API_URL_PREFIX = 'https://soilgrids.org/soilgrids/v2.0/properties/query';
 const GEOLOCATION_API_TIMEOUT_MS = 7000;
 
 module.exports = {

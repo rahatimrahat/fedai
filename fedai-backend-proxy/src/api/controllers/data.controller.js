@@ -14,7 +14,41 @@ const {
 } = require('../utils/constants');
 
 // IP Location fetching is now handled directly by the Next.js API route (pages/api/ip-location.ts)
-// The getIpLocation function has been removed from this controller.
+const getIpLocation = async (req, res) => {
+    try {
+        // Primary provider: ipapi.co
+        const primaryUrl = IPAPI_CO_URL;
+        const primaryData = await robustFetch(primaryUrl, {}, GEOLOCATION_API_TIMEOUT_MS);
+
+        if (primaryData && !primaryData.error) {
+            return res.json({
+                latitude: primaryData.latitude,
+                longitude: primaryData.longitude,
+                city: primaryData.city,
+                country: primaryData.country_name,
+                source: 'ipapi.co'
+            });
+        }
+
+        // Fallback provider: ip-api.com
+        const fallbackUrl = IP_API_COM_URL;
+        const fallbackData = await robustFetch(fallbackUrl, {}, GEOLOCATION_API_TIMEOUT_MS);
+
+        if (fallbackData && fallbackData.status === 'success') {
+            return res.json({
+                latitude: fallbackData.lat,
+                longitude: fallbackData.lon,
+                city: fallbackData.city,
+                country: fallbackData.country,
+                source: 'ip-api.com'
+            });
+        }
+
+        res.status(502).json({ error: 'Both IP location services failed.', details: { primary: primaryData, fallback: fallbackData } });
+    } catch (error) {
+        res.status(500).json({ error: `IP location lookup failed: ${error.message}` });
+    }
+};
 
 // Helper function to calculate averages from daily data
 function calculateAveragesFromDaily(dailyData) {
@@ -289,7 +323,7 @@ const getSoilData = async (req, res) => {
 
 
 module.exports = {
-  // getIpLocation, // Removed
+  getIpLocation,
   getWeatherData,
   getElevationData,
   getSoilData,
