@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { type UserLocation, type WeatherData, type EnvironmentalData, type UiStrings, LanguageCode, DailyWeatherData } from '../types';
 import { fetchWeatherData } from '@/services/weatherService';
 import { fetchElevation } from '@/services/elevationService';
-import { fetchSoilData } from '@/services/soilService';
+import { fetchSoilData } from '@/services/soilApi';
 import { useLocalizationContext } from '@/components/LocalizationContext';
 
 export function useContextualData(userLocation: UserLocation | null) {
