@@ -30,7 +30,7 @@ const ipLocationServices = [
         longitude: data.lon,
         city: data.city,
         country: data.country,
-        countryCode: dataFallback.countryCode,
+        countryCode: data.countryCode,
       };
     },
   },
