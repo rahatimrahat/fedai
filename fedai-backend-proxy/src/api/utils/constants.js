@@ -7,6 +7,7 @@ const OPEN_METEO_ARCHIVE_API_BASE = 'https://archive-api.open-meteo.com/v1/archi
 const OPEN_ELEVATION_API_URL_PREFIX = 'https://api.open-elevation.com/api/v1/lookup?locations=';
 const OPEN_TOPO_DATA_API_URL_PREFIX = 'https://api.opentopodata.org/v1/etopo1?locations=';
 const SOILGRIDS_API_URL_PREFIX = 'https://soilgrids.org/soilgrids/v2.0/properties/query';
+const OPEN_PLANTBOOK_API_URL_PREFIX = 'https://open.plantbook.io/api/v1/plant/detail/';
 const GEOLOCATION_API_TIMEOUT_MS = 7000;
 
 module.exports = {
@@ -17,5 +18,6 @@ module.exports = {
   OPEN_ELEVATION_API_URL_PREFIX,
   OPEN_TOPO_DATA_API_URL_PREFIX,
   SOILGRIDS_API_URL_PREFIX,
+  OPEN_PLANTBOOK_API_URL_PREFIX,
   GEOLOCATION_API_TIMEOUT_MS,
 };

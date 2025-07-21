@@ -105,7 +105,7 @@ The Fedai frontend application is designed to make API calls to a backend proxy 
 4.  **Use the Application:**
     *   Ensure your Backend Proxy Server is running (e.g., on `http://localhost:3001`).
     *   Open the URL provided by your chosen development server (e.g., `http://localhost:5173` or `http://localhost:3000`) in your browser.
-    *   The frontend will make API calls to relative paths like `/api/gemini-proxy`, `/api/weather`, etc. These are expected to be handled by your running Backend Proxy. The proxy's CORS settings are configured to allow requests from common frontend development ports. If your frontend server uses a different port, you may need to add it to the `corsOptions.origin` array in the backend's `server.js` and restart the proxy.
+    *   The frontend will make API calls to relative paths like `/api/gemini-proxy`, `/api/weather`, `/api/plant/:id`, etc. These are expected to be handled by your running Backend Proxy. The proxy's CORS settings are configured to allow requests from common frontend development ports. If your frontend server uses a different port, you may need to add it to the `corsOptions.origin` array in the backend's `server.js` and restart the proxy.
 
 #### Production Build
 While the `esm.sh/tsx` setup is excellent for simplicity, a typical production deployment involves a build process using Vite.
