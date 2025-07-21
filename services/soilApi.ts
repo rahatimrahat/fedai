@@ -1,11 +1,11 @@
 import { TestServiceResult } from '@/types';
-import { SoilGridsClient } from 'soilgrids-client';
+import { SoilClient } from 'openepi-client';
 
-const client = new SoilGridsClient();
+const client = new SoilClient();
 
 export const fetchSoilData = async (lat: number, lon: number) => {
   try {
-    const { data, error } = await client.getSoilProperties({
+    const { data, error } = await client.getSoilProperty({
       lat,
       lon,
       properties: [
@@ -16,7 +16,7 @@ export const fetchSoilData = async (lat: number, lon: number) => {
     });
 
     if (error || !data) {
-      throw new Error('Failed to fetch soil data using SoilGridsClient.');
+      throw new Error('Failed to fetch soil data using openepi-client.');
     }
 
     return data.properties.layers;
@@ -28,11 +28,12 @@ export const fetchSoilData = async (lat: number, lon: number) => {
 
 export const testSoilService = async (): Promise<TestServiceResult> => {
   try {
-    const { data, error } = await client.getSoilProperties({
+    const { data, error } = await client.getSoilProperty({
       lat: 52.52,
       lon: 13.41,
       properties: ["bdod"],
-      depths: ["0-5cm"]
+      depths: ["0-5cm"],
+      values: ["mean"]
     });
 
     if (error) {
