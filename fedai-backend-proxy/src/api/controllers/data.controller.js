@@ -21,13 +21,17 @@ const getIpLocation = async (req, res) => {
         const primaryData = await robustFetch(primaryUrl, {}, GEOLOCATION_API_TIMEOUT_MS);
 
         if (primaryData && !primaryData.error) {
-            return res.json({
-                latitude: primaryData.latitude,
-                longitude: primaryData.longitude,
-                city: primaryData.city,
-                country: primaryData.country_name,
-                source: 'ipapi.co'
-            });
+            // ipapi.co can sometimes return a response with an error field, e.g. { "error": true, "reason": "Rate Limited" }
+            // It can also return a valid response but with no city/country for reserved IPs.
+            if (primaryData.latitude && primaryData.longitude) {
+                return res.json({
+                    latitude: primaryData.latitude,
+                    longitude: primaryData.longitude,
+                    city: primaryData.city || 'Unknown', // Fallback for missing city
+                    country: primaryData.country_name || 'Unknown', // Fallback for missing country
+                    source: 'ipapi.co'
+                });
+            }
         }
 
         // Fallback provider: ip-api.com
