@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit'); // Import rate-limit middleware
 const { GoogleGenAI } = require('@google/genai');
 
 // --- Initialize Express App ---
@@ -17,6 +18,14 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
+
+// Apply rate limiting to all requests
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use(limiter);
 
 // --- Initialize Gemini AI Client ---
 const apiKey = process.env.GEMINI_API_KEY;
