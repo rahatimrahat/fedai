@@ -4,6 +4,7 @@ import { fetchWeatherData } from '@/services/weatherService';
 import { fetchElevation } from '@/services/elevationService';
 import { fetchSoilData } from '@/services/soilApi';
 import { useLocalizationContext } from '@/components/LocalizationContext';
+import { logError } from '@/utils/errorHandler';
 
 export function useContextualData(userLocation: UserLocation | null) {
   const { uiStrings, selectedLanguage } = useLocalizationContext();
@@ -24,26 +25,26 @@ export function useContextualData(userLocation: UserLocation | null) {
   const retryCountRef = useRef<{ weather: number; environmental: number }>({ weather: 0, environmental: 0 });
 
   const resetFetchState = () => {
-    setWeatherData((prev?: WeatherData) => ({
+    setWeatherData((prev?: WeatherData | null): WeatherData | null => ({
       ...(prev || {}),
-      current: null,
-      recentDailyRawData: null,
-      recentMonthlyAverage: null,
-      historicalMonthlyAverage: null,
+      current: undefined,
+      recentDailyRawData: undefined,
+      recentMonthlyAverage: undefined,
+      historicalMonthlyAverage: undefined,
       errorKey: null,
       error: undefined,
     }));
-    setEnvironmentalData((prev?: EnvironmentalData) => ({
+    setEnvironmentalData((prev?: EnvironmentalData | null): EnvironmentalData | null => ({
       ...(prev || {}),
-      elevation: null,
-      soilPH: null,
-      soilOrganicCarbon: null,
-      soilCEC: null,
-      soilNitrogen: null,
-      soilSand: null,
-      soilSilt: null,
-      soilClay: null,
-      soilAWC: null,
+      elevation: undefined,
+      soilPH: undefined,
+      soilOrganicCarbon: undefined,
+      soilCEC: undefined,
+      soilNitrogen: undefined,
+      soilSand: undefined,
+      soilSilt: undefined,
+      soilClay: undefined,
+      soilAWC: undefined,
       errorKey: null,
       error: undefined
     }));
@@ -106,7 +107,7 @@ export function useContextualData(userLocation: UserLocation | null) {
             (error, retryCount) => {
               if (currentFetchId === fetchIdRef.current) {
                 console.error(`Final weather fetch error after ${retryCount} retries:`, error);
-                setWeatherData(prev => ({
+                setWeatherData((prev: WeatherData | null) => ({
                   ...(prev || {}),
                   current: null,
                   recentDailyRawData: null,
@@ -168,7 +169,7 @@ export function useContextualData(userLocation: UserLocation | null) {
             (error, retryCount) => {
               if (currentFetchId === fetchIdRef.current) {
                 console.error(`Final environmental fetch error after ${retryCount} retries:`, error);
-                setEnvironmentalData(prev => ({
+                setEnvironmentalData((prev: EnvironmentalData | null) => ({
                   ...(prev || {}),
                   dataTimestamp: new Date().toISOString(),
                   errorKey: 'environmentalDataUnavailable',
@@ -184,7 +185,7 @@ export function useContextualData(userLocation: UserLocation | null) {
         } catch (criticalError) {
           console.error("Critical error in fetchData:", criticalError);
           if (currentFetchId === fetchIdRef.current) {
-            setWeatherData(prev => ({
+            setWeatherData((prev: WeatherData | null) => ({
               ...(prev || {}),
               current: null,
               recentDailyRawData: null,
@@ -193,7 +194,7 @@ export function useContextualData(userLocation: UserLocation | null) {
               errorKey: 'weatherUnavailable',
               error: (criticalError instanceof Error ? criticalError.message : String(criticalError)),
             }));
-            setEnvironmentalData(prev => ({
+            setEnvironmentalData((prev: EnvironmentalData | null) => ({
               ...(prev || {}),
               dataTimestamp: new Date().toISOString(),
               errorKey: 'environmentalDataUnavailable',
@@ -233,7 +234,7 @@ export function useContextualData(userLocation: UserLocation | null) {
           }
         }
       }
-      setWeatherData(prev => ({
+      setWeatherData((prev: WeatherData | null) => ({
         ...prev!,
         error: localizedErrorMessage
       }));
@@ -255,7 +256,7 @@ export function useContextualData(userLocation: UserLocation | null) {
           }
         }
       }
-      setEnvironmentalData(prev => ({
+      setEnvironmentalData((prev: EnvironmentalData | null) => ({
         ...prev!,
         error: localizedErrorMessage
       }));

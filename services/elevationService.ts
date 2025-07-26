@@ -6,6 +6,7 @@ import {
     SERVICE_TEST_TIMEOUT_MS
 } from '@/constants';
 import { getCachedOrFetch } from './cache'; // Import the generic cache utility
+import { handleApiError, logError } from '@/utils/errorHandler';
 
 const PROXY_ELEVATION_ENDPOINT = '/api/elevation';
 
@@ -53,19 +54,9 @@ async function fetchElevationViaProxy(latitude: number, longitude: number): Prom
     return { elevation: data.elevation, source: data.source || 'proxy' };
 
   } catch (error) {
-    let errorMessage = `Error fetching elevation via proxy for ${latitude},${longitude}`;
-    if (error instanceof Error) {
-        errorMessage = error.message; // Use original message
-        if (error.name === 'AbortError') {
-            errorMessage = `Elevation proxy request timed out for ${latitude},${longitude}.`;
-        } else if (errorMessage.toLowerCase().includes('failed to fetch')) {
-            errorMessage = `Network error or CORS issue with elevation proxy: ${errorMessage}`;
-        }
-    } else {
-        errorMessage = String(error);
-    }
-    console.error(`Error fetching elevation via proxy for ${latitude},${longitude}: ${errorMessage}. Original error:`, error);
-    throw new Error(errorMessage);
+    const fedaiError = handleApiError(error, `Error fetching elevation via proxy for ${latitude},${longitude}`);
+    logError(fedaiError, 'ElevationDataFetch');
+    throw new Error(fedaiError.message);
   }
 }
 
@@ -106,16 +97,8 @@ export async function testElevationService(): Promise<TestServiceResult> {
     }
     return { status: 'DOWN', details: `Elevation Proxy HTTP error: ${response.status}` };
   } catch (error) {
-    let message = 'Failed to test Elevation Proxy';
-    if (error instanceof Error) {
-        message = error.message;
-        if (error.name === 'AbortError') {
-            message = 'Elevation Proxy test request timed out.';
-        } else if (message.toLowerCase().includes('failed to fetch')) {
-            message = 'Network error or CORS issue during Elevation Proxy test (Failed to fetch).';
-        }
-    }
-    // console.warn('Elevation Service (via Proxy) test failed:', message);
-    return { status: 'ERROR', details: message };
+    const fedaiError = handleApiError(error, 'Failed to test Elevation Proxy');
+    logError(fedaiError, 'ElevationServiceTest');
+    return { status: 'DOWN', details: fedaiError.message };
   }
 }

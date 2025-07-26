@@ -17,6 +17,12 @@
     "allowJs": true,
     "jsx": "react-jsx",
 
+    /* Path aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

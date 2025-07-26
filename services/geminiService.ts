@@ -10,6 +10,7 @@ import {
   type QualitativeConfidenceData,
 } from '../types';
 import { GEMINI_ANALYSIS_TIMEOUT_MS, GEMINI_TEST_TIMEOUT_MS } from '@/constants';
+import { handleApiError, logError } from '@/utils/errorHandler';
 
 // Prompt construction helpers are removed from here and moved to the backend.
 
@@ -119,23 +120,9 @@ export async function analyzePlantHealth(
     return completeResponse;
 
   } catch (error) {
-    let errorMessage = (error instanceof Error ? error.message : String(error)) || 'Unknown analysis error';
-    let finalErrorMessage = 'Analysis failed'; // Generic prefix
-
-    if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-            finalErrorMessage = 'Analysis request timed out.';
-        } else if (errorMessage.toLowerCase().includes('failed to fetch')) {
-            finalErrorMessage = `Network error during analysis: ${errorMessage}`;
-        } else {
-            // For errors thrown from !response.ok block or other generic errors
-            finalErrorMessage = errorMessage;
-        }
-    } else {
-        finalErrorMessage = `An unexpected error occurred during analysis: ${errorMessage}`;
-    }
-    console.error(`Critical analysis error in analyzePlantHealth: ${finalErrorMessage}. Original error:`, error);
-    throw new Error(finalErrorMessage);
+    const fedaiError = handleApiError(error, 'Analysis failed');
+    logError(fedaiError, 'PlantHealthAnalysis');
+    throw new Error(fedaiError.message);
   }
 }
 
@@ -158,16 +145,8 @@ export async function testGeminiService(): Promise<TestServiceResult> {
     }
     return { status: 'DOWN', details: `Proxy status endpoint HTTP error: ${response.status}` };
   } catch (error) {
-    let message = 'Failed to connect to backend proxy status endpoint';
-     if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-            message = 'Backend proxy status request timed out.';
-        } else if (error.message.toLowerCase().includes('failed to fetch')) {
-            message = 'Network error or CORS issue during proxy status test (Failed to fetch).';
-        } else {
-            message = error.message;
-        }
-    }
-    return { status: 'ERROR', details: message };
+    const fedaiError = handleApiError(error, 'Failed to connect to backend proxy status endpoint');
+    logError(fedaiError, 'GeminiServiceTest');
+    return { status: 'DOWN', details: fedaiError.message };
   }
 }

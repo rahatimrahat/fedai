@@ -6,7 +6,7 @@ const { HttpsProxyAgent } = require('https-proxy-agent');
 const { HttpProxyAgent } = require('http-proxy-agent');
 
 /**
- * A robust fetch helper with a timeout mechanism.
+ * A robust fetch helper with a timeout mechanism and retry logic.
  * @param {string} url - The URL to fetch.
  * @param {object} options - Fetch options.
  * @param {number} timeout - Timeout in milliseconds.

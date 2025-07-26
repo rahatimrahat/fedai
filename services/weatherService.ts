@@ -6,6 +6,7 @@ import {
     SERVICE_TEST_TIMEOUT_MS
 } from '../constants';
 import { getCachedOrFetch } from './cache'; // Import the generic cache utility
+import { handleApiError, logError } from '@/utils/errorHandler';
 
 const PROXY_WEATHER_ENDPOINT = '/api/weather';
 
@@ -62,19 +63,9 @@ async function fetchAndProcessWeatherDataViaProxy(location: UserLocation): Promi
     return fetchedData;
 
   } catch (error) {
-    let errorMessage = `Error fetching weather data via proxy for ${latitude},${longitude}`;
-     if (error instanceof Error) {
-        errorMessage = error.message; // Use original message
-        if (error.name === 'AbortError') {
-            errorMessage = `Weather proxy request timed out for ${latitude},${longitude}.`;
-        } else if (errorMessage.toLowerCase().includes('failed to fetch')) {
-            errorMessage = `Network error or CORS issue with weather proxy: ${errorMessage}`;
-        }
-    } else {
-        errorMessage = String(error);
-    }
-    console.error(`Error fetching weather data via proxy for ${latitude},${longitude}: ${errorMessage}. Original error:`, error);
-    throw new Error(errorMessage);
+    const fedaiError = handleApiError(error, `Error fetching weather data via proxy for ${latitude},${longitude}`);
+    logError(fedaiError, 'WeatherDataFetch');
+    throw new Error(fedaiError.message);
   }
 }
 
@@ -111,16 +102,8 @@ export async function testWeatherService(): Promise<TestServiceResult> {
     }
     return { status: 'DOWN', details: `Weather Proxy HTTP error: ${response.status}` };
   } catch (error) {
-    let message = 'Failed to test Weather Proxy';
-    if (error instanceof Error) {
-        message = error.message;
-        if (error.name === 'AbortError') {
-            message = 'Weather Proxy test request timed out.';
-        } else if (message.toLowerCase().includes('failed to fetch')) {
-            message = 'Network error or CORS issue during Weather Proxy test (Failed to fetch).';
-        }
-    }
-    // console.warn('Weather Service (via Proxy) test failed:', message);
-    return { status: 'ERROR', details: message };
+    const fedaiError = handleApiError(error, 'Failed to test Weather Proxy');
+    logError(fedaiError, 'WeatherServiceTest');
+    return { status: 'DOWN', details: fedaiError.message };
   }
 }

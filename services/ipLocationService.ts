@@ -6,6 +6,7 @@ import {
     SERVICE_TEST_TIMEOUT_MS
 } from '../constants';
 import { getCachedOrFetch } from './cache'; // Import the generic cache utility
+import { handleApiError, logError } from '@/utils/errorHandler';
 
 const PROXY_IP_LOCATION_ENDPOINT = '/api/ip-location';
 
@@ -68,20 +69,9 @@ async function fetchIpLocationViaProxy(): Promise<IpLocationFetchResult> {
       serviceName: data.serviceName || 'proxy',
     };
   } catch (error) {
-    let errorMessage = 'Unknown error with IP location proxy.';
-    if (error instanceof Error) {
-        errorMessage = error.message; // Use the original error message if available
-        if (error.name === 'AbortError') {
-            errorMessage = 'IP location proxy request timed out.';
-        } else if (errorMessage.toLowerCase().includes('failed to fetch')) {
-            // Keep or enhance the original message for network errors
-            errorMessage = `Network error or CORS issue with IP location proxy: ${errorMessage}`;
-        }
-    } else {
-        errorMessage = String(error); // For non-Error objects thrown
-    }
-    console.error(`Error fetching from IP location proxy: ${errorMessage}. Original error object:`, error); // Keep console.error
-    throw new Error(errorMessage); // Re-throw as a new Error or the original if it's already an Error
+    const fedaiError = handleApiError(error, 'Unknown error with IP location proxy.');
+    logError(fedaiError, 'IpLocationFetch');
+    throw new Error(fedaiError.message);
   }
 }
 
@@ -114,16 +104,8 @@ export async function testIpLocationService(): Promise<TestServiceResult> {
     }
     return { status: 'DOWN', details: `IP Location Proxy HTTP error: ${response.status}` };
   } catch (error) {
-    let message = 'Failed to test IP Location Proxy';
-    if (error instanceof Error) {
-        message = error.message;
-        if (error.name === 'AbortError') {
-            message = 'IP Location Proxy test request timed out.';
-        } else if (message.toLowerCase().includes('failed to fetch')) {
-            message = 'Network error or CORS issue during IP Location Proxy test (Failed to fetch).';
-        }
-    }
-    // console.warn('IP Location Service (via Proxy) test failed:', message);
-    return { status: 'ERROR', details: message };
+    const fedaiError = handleApiError(error, 'Failed to test IP Location Proxy');
+    logError(fedaiError, 'IpLocationServiceTest');
+    return { status: 'DOWN', details: fedaiError.message };
   }
 }

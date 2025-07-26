@@ -6,6 +6,7 @@ import {
     GEOLOCATION_API_TIMEOUT_MS
 } from '@/constants';
 import { getCachedOrFetch } from './cache'; // Import the generic cache utility
+import { handleApiError, logError } from '@/utils/errorHandler';
 
 const PROXY_SOIL_ENDPOINT = '/api/soil';
 
@@ -75,20 +76,10 @@ async function fetchSoilDataViaProxy(location: UserLocation): Promise<SoilFetchR
     return data;
 
   } catch (error) {
-    let errorMessage = `Error fetching soil data via proxy for ${latitude},${longitude}`;
-    if (error instanceof Error) {
-        errorMessage = error.message; // Use original message
-        if (error.name === 'AbortError') {
-            errorMessage = `Soil proxy request timed out for ${latitude},${longitude}.`;
-        } else if (errorMessage.toLowerCase().includes('failed to fetch')) {
-            errorMessage = `Network error or CORS issue with soil proxy: ${errorMessage}`;
-        }
-    } else {
-        errorMessage = String(error);
-    }
-    console.error(`Error fetching soil data via proxy for ${latitude},${longitude}: ${errorMessage}. Original error:`, error);
+    const fedaiError = handleApiError(error, `Error fetching soil data via proxy for ${latitude},${longitude}`);
+    logError(fedaiError, 'SoilDataFetch');
     // Throw an error that the hook can catch and map to UI strings
-    throw new Error(errorMessage);
+    throw new Error(fedaiError.message);
   }
 }
 
@@ -139,16 +130,8 @@ export async function testSoilService(): Promise<TestServiceResult> {
 
     return { status: 'ERROR', details: 'Soil Proxy returned an unexpected response structure.' };
   } catch (error) {
-    let message = 'Failed to test Soil Proxy';
-    if (error instanceof Error) {
-        message = error.message;
-        if (error.name === 'AbortError') {
-            message = 'Soil Proxy test request timed out.';
-        } else if (message.toLowerCase().includes('failed to fetch')) {
-            message = 'Network error or CORS issue during Soil Proxy test (Failed to fetch).';
-        }
-    }
-    // console.warn('Soil Service (via Proxy) test failed:', message);
-    return { status: 'DOWN', details: message };
+    const fedaiError = handleApiError(error, 'Failed to test Soil Proxy');
+    logError(fedaiError, 'SoilServiceTest');
+    return { status: 'DOWN', details: fedaiError.message };
   }
 }

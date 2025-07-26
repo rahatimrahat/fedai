@@ -1,14 +1,20 @@
 import { PlantData } from '../types/api';
+import { handleApiError, logError } from '@/utils/errorHandler';
 
 const PROXY_PLANT_ENDPOINT_PREFIX = '/api/plant';
 
 export const fetchPlantData = async (plantId: string): Promise<PlantData> => {
-  const url = `${PROXY_PLANT_ENDPOINT_PREFIX}/${plantId}`;
+  try {
+    const url = `${PROXY_PLANT_ENDPOINT_PREFIX}/${plantId}`;
+    const response = await fetch(url);
 
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch plant data.');
+    if (!response.ok) {
+      throw new Error('Failed to fetch plant data.');
+    }
+    return response.json();
+  } catch (error) {
+    const fedaiError = handleApiError(error, 'Failed to fetch plant data.');
+    logError(fedaiError, 'PlantDataFetch');
+    throw new Error(fedaiError.message);
   }
-  return response.json();
 };
