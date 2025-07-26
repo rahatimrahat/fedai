@@ -7,7 +7,10 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
+
+# Explicitly install missing types and dependencies that might be causing issues
+RUN npm install @types/react@19.1.8 @types/react-dom@19.1.6 csstype@3.1.3
 
 # Copy the rest of the application code
 COPY . .
