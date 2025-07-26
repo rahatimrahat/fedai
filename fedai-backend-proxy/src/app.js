@@ -17,6 +17,7 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
+app.set('trust proxy', 1); // Trust the first proxy
 app.use(express.json({ limit: '10mb' }));
 
 // Apply rate limiting to all requests

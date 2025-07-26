@@ -173,11 +173,37 @@ const getWeatherData = async (req, res) => {
         if (validHistGDDs.length > 0) overallHistoricalAverage.gdd_sum = parseFloat((validHistGDDs.reduce((s, v) => s + v, 0) / validHistGDDs.length).toFixed(1));
     }
     
+    // --- Response Structure Validation ---
+    let validatedCurrent = currentDataResult.status === 'fulfilled' ? currentDataResult.value.current : null;
+    if (validatedCurrent !== null && typeof validatedCurrent !== 'object') {
+        console.warn(`[WEATHER_DATA_VALIDATION] Invalid 'current' data structure received. Expected object, got ${typeof validatedCurrent}. Setting to null.`);
+        validatedCurrent = null;
+    }
+
+    let validatedRecentDailyRawData = recentDailyRawData;
+    if (validatedRecentDailyRawData !== null && !Array.isArray(validatedRecentDailyRawData)) {
+        console.warn(`[WEATHER_DATA_VALIDATION] Invalid 'recentDailyRawData' structure received. Expected array, got ${typeof validatedRecentDailyRawData}. Setting to null.`);
+        validatedRecentDailyRawData = null;
+    }
+
+    let validatedRecentMonthlyAverage = (recentMonthlyAverage && (recentMonthlyAverage.mean_temp !== null || recentMonthlyAverage.total_precip !== null || recentMonthlyAverage.gdd_sum !== null)) ? recentMonthlyAverage : null;
+    if (validatedRecentMonthlyAverage !== null && typeof validatedRecentMonthlyAverage !== 'object') {
+        console.warn(`[WEATHER_DATA_VALIDATION] Invalid 'recentMonthlyAverage' structure received. Expected object, got ${typeof validatedRecentMonthlyAverage}. Setting to null.`);
+        validatedRecentMonthlyAverage = null;
+    }
+
+    let validatedHistoricalMonthlyAverage = (overallHistoricalAverage.mean_temp !== null || overallHistoricalAverage.total_precip !== null || overallHistoricalAverage.gdd_sum !== null) ? overallHistoricalAverage : null;
+    if (validatedHistoricalMonthlyAverage !== null && typeof validatedHistoricalMonthlyAverage !== 'object') {
+        console.warn(`[WEATHER_DATA_VALIDATION] Invalid 'historicalMonthlyAverage' structure received. Expected object, got ${typeof validatedHistoricalMonthlyAverage}. Setting to null.`);
+        validatedHistoricalMonthlyAverage = null;
+    }
+    // --- End Validation ---
+
     res.json({
-      current: currentDataResult.status === 'fulfilled' ? currentDataResult.value.current : null,
-      recentDailyRawData: recentDailyRawData, // Send raw daily data for sparklines etc.
-      recentMonthlyAverage: (recentMonthlyAverage && (recentMonthlyAverage.mean_temp !== null || recentMonthlyAverage.total_precip !== null || recentMonthlyAverage.gdd_sum !== null)) ? recentMonthlyAverage : null,
-      historicalMonthlyAverage: (overallHistoricalAverage.mean_temp !== null || overallHistoricalAverage.total_precip !== null || overallHistoricalAverage.gdd_sum !== null) ? overallHistoricalAverage : null,
+      current: validatedCurrent,
+      recentDailyRawData: validatedRecentDailyRawData,
+      recentMonthlyAverage: validatedRecentMonthlyAverage,
+      historicalMonthlyAverage: validatedHistoricalMonthlyAverage,
       weatherDataTimestamp: new Date().toISOString()
     });
 
@@ -347,6 +373,18 @@ const getPlantData = async (req, res) => {
         const data = await robustFetch(plantUrl, {
             headers: { 'Authorization': `Token ${process.env.OPEN_PLANTBOOK_API_KEY}` }
         });
+        
+        // --- Response Structure Validation ---
+        if (data === null || typeof data !== 'object' || Object.keys(data).length === 0) {
+            console.warn(`[PLANTBOOK_DATA_VALIDATION] Invalid or empty response received from OpenPlantBook for ID ${id}.`);
+            return res.status(502).json({
+                error: 'OpenPlantBook returned an invalid or empty response.',
+                errorCode: 'PLANTBOOK_INVALID_RESPONSE',
+                source: 'OpenPlantBook'
+            });
+        }
+        // --- End Validation ---
+
         res.json(data);
     } catch (error) {
         console.error(`[PLANTBOOK_API_ERROR] ${error.message}`);

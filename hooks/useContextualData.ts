@@ -18,8 +18,13 @@ export function useContextualData(userLocation: UserLocation | null) {
   const [environmentalData, setEnvironmentalData] = useState<EnvironmentalData | null>(null);
   const [isLoadingEnvironmental, setIsLoadingEnvironmental] = useState<boolean>(false);
 
+  // Ref to track the current fetch operation to prevent race conditions
+  const fetchIdRef = useRef<number>(0);
+
   useEffect(() => {
     if (userLocation) {
+      const currentFetchId = ++fetchIdRef.current; // Increment fetch ID for this effect run
+
       const fetchData = async () => {
         if (!weatherData || (!weatherData.current && !weatherData.recentMonthlyAverage && !weatherData.historicalMonthlyAverage && !weatherData.recentDailyRawData && !weatherData.errorKey)) {
           setIsLoadingWeather(true);
@@ -28,62 +33,72 @@ export function useContextualData(userLocation: UserLocation | null) {
           setIsLoadingEnvironmental(true);
         }
       
-        // Clear previous error states before fetching new data
-        setWeatherData(prev => ({
-            ...(prev || {}),
-            errorKey: null, 
-            error: undefined, // Explicitly clear direct error string
-        }));
-        setWeatherData(prev => ({
-            ...(prev || {}), // Keep existing data if any, like timestamp
-            current: null, // Clear specific data fields
-            recentDailyRawData: null,
-            recentMonthlyAverage: null,
-            historicalMonthlyAverage: null,
-            errorKey: null,
-            error: undefined,
-        }));
-        setEnvironmentalData(prev => ({ 
-            ...(prev || {}), 
-            elevation: null, // Clear specific data fields
-            soilPH: null,
-            soilOrganicCarbon: null,
-            soilCEC: null,
-            soilNitrogen: null,
-            soilSand: null,
-            soilSilt: null,
-            soilClay: null,
-            soilAWC: null,
-            errorKey: null,
-            error: undefined
-        }));
+        // Clear previous states
+        setWeatherData((prev) => {
+            const currentState = prev ?? {};
+            return {
+                ...currentState,
+                current: null,
+                recentDailyRawData: null,
+                recentMonthlyAverage: null,
+                historicalMonthlyAverage: null,
+                errorKey: null,
+                error: undefined,
+            };
+        });
+        setEnvironmentalData((prev) => {
+            const currentState = prev ?? {};
+            return {
+                ...currentState,
+                elevation: null,
+                soilPH: null,
+                soilOrganicCarbon: null,
+                soilCEC: null,
+                soilNitrogen: null,
+                soilSand: null,
+                soilSilt: null,
+                soilClay: null,
+                soilAWC: null,
+                errorKey: null,
+                error: undefined
+            };
+        });
         
         const weatherFetcher = async () => {
             try {
               const newGenericWeatherData = await fetchWeatherData(userLocation);
-              setWeatherData(prev => ({ // Ensure all fields are set from newGenericWeatherData
-                current: newGenericWeatherData.current,
-                recentDailyRawData: newGenericWeatherData.recentDailyRawData,
-                recentMonthlyAverage: newGenericWeatherData.recentMonthlyAverage,
-                historicalMonthlyAverage: newGenericWeatherData.historicalMonthlyAverage,
-                weatherDataTimestamp: newGenericWeatherData.weatherDataTimestamp,
-                errorKey: null, // Explicitly null on success
-                error: undefined,
-              }));
+              // Only update state if this is the latest fetch operation
+              if (currentFetchId === fetchIdRef.current) {
+                  setWeatherData(prev => ({
+                    current: newGenericWeatherData.current,
+                    recentDailyRawData: newGenericWeatherData.recentDailyRawData,
+                    recentMonthlyAverage: newGenericWeatherData.recentMonthlyAverage,
+                    historicalMonthlyAverage: newGenericWeatherData.historicalMonthlyAverage,
+                    weatherDataTimestamp: newGenericWeatherData.weatherDataTimestamp,
+                    errorKey: null,
+                    error: undefined,
+                  }));
+              }
             } catch (err) {
                 console.error("Weather fetch error in useContextualData:", err);
-                setWeatherData(prevData => ({
-                    ...(prevData || {}),
-                    current: null,
-                    recentDailyRawData: null,
-                    recentMonthlyAverage: null,
-                    historicalMonthlyAverage: null,
-                    errorKey: 'weatherUnavailable',
-                    error: (err instanceof Error ? err.message : String(err)),
-                    weatherDataTimestamp: prevData?.weatherDataTimestamp || new Date().toISOString()
-                }));
+                // Only update state if this is the latest fetch operation
+                if (currentFetchId === fetchIdRef.current) {
+                    setWeatherData(prevData => ({
+                        ...(prevData || {}),
+                        current: null,
+                        recentDailyRawData: null,
+                        recentMonthlyAverage: null,
+                        historicalMonthlyAverage: null,
+                        errorKey: 'weatherUnavailable',
+                        error: (err instanceof Error ? err.message : String(err)),
+                        weatherDataTimestamp: prevData?.weatherDataTimestamp || new Date().toISOString()
+                    }));
+                }
             } finally {
-                setIsLoadingWeather(false);
+                // Only update loading state if this is the latest fetch operation
+                if (currentFetchId === fetchIdRef.current) {
+                    setIsLoadingWeather(false);
+                }
             }
         };
 
@@ -108,7 +123,7 @@ export function useContextualData(userLocation: UserLocation | null) {
                     envDataToSet.error = (elevationResult.reason instanceof Error ? elevationResult.reason.message : String(elevationResult.reason));
                 } else { // Fulfilled but no elevation data or undefined (should not happen with current service)
                     envDataToSet.errorKey = 'elevationDataUnavailable';
-                    envDataToSet.error = uiStrings.elevationDataUnavailable || 'Elevation data is unavailable (empty).';
+                    envDataToSet.error = (uiStrings.elevationDataUnavailable || 'Elevation data is unavailable (empty).');
                 }
 
                 if (soilResult.status === 'fulfilled' && soilResult.value) {
@@ -124,7 +139,7 @@ export function useContextualData(userLocation: UserLocation | null) {
                         // This case is now handled by fetchSoilDataViaProxy throwing an error, so it would be 'rejected'.
                         // Kept for robustness if service changes.
                         envDataToSet.errorKey = envDataToSet.errorKey || 'soilDataUnavailable'; // Preserve elevation error if present
-                        envDataToSet.error = envDataToSet.error || (soilVal.error || uiStrings.soilDataUnavailable || 'Soil data is unavailable (empty).');
+                        envDataToSet.error = envDataToSet.error || (soilVal.error || (uiStrings.soilDataUnavailable || 'Soil data is unavailable (empty).'));
                     }
                 } else if (soilResult.status === 'rejected') {
                     console.error("Soil fetch error:", soilResult.reason);
@@ -137,16 +152,31 @@ export function useContextualData(userLocation: UserLocation | null) {
                         envDataToSet.error = (soilResult.reason instanceof Error ? soilResult.reason.message : String(soilResult.reason));
                     }
                 }
-                setEnvironmentalData(prev => ({...(prev || { dataTimestamp: envDataToSet.dataTimestamp }), ...envDataToSet}));
+                // Only update state if this is the latest fetch operation
+                if (currentFetchId === fetchIdRef.current) {
+                    setEnvironmentalData((prev) => {
+                        const currentState = prev ?? { dataTimestamp: new Date().toISOString() };
+                        return {
+                            ...currentState,
+                            ...envDataToSet
+                        };
+                    });
+                }
             } catch (criticalError) { // Catch for Promise.allSettled itself or critical unhandled issue
                  console.error("Critical error in environmental data Promise.allSettled block:", criticalError);
-                 setEnvironmentalData({
-                     errorKey: 'environmentalDataUnavailable',
-                     error: (criticalError instanceof Error ? criticalError.message : String(criticalError)),
-                     dataTimestamp: new Date().toISOString()
-                 });
+                 // Only update state if this is the latest fetch operation
+                 if (currentFetchId === fetchIdRef.current) {
+                     setEnvironmentalData({
+                         errorKey: 'environmentalDataUnavailable',
+                         error: (criticalError instanceof Error ? criticalError.message : String(criticalError)),
+                         dataTimestamp: new Date().toISOString()
+                     });
+                 }
             } finally {
-                setIsLoadingEnvironmental(false);
+                // Only update loading state if this is the latest fetch operation
+                if (currentFetchId === fetchIdRef.current) {
+                    setIsLoadingEnvironmental(false);
+                }
             }
         };
 
