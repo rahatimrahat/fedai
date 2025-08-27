@@ -383,6 +383,15 @@
     border-color: hsl(174, 65%, 30%);
     box-shadow: 0 6px 12px rgba(var(--accent-teal-rgb), 0.25); /* Teal shadow */
   }
+
+  .btn-destructive {
+    @apply btn bg-[var(--status-red)] text-white border-[var(--status-red)];
+  }
+  .btn-destructive:hover:not(:disabled) {
+    background-color: #b71c1c; /* A darker shade of the status red */
+    border-color: #b71c1c;
+    box-shadow: 0 6px 12px rgba(211, 47, 47, 0.25); /* Red shadow */
+  }
   
   .card {
     @apply bg-glass rounded-xl p-6; /* Uses .bg-glass for consistency */

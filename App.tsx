@@ -38,9 +38,13 @@ const App: React.FC = () => {
     setCurrentView('diagnosis'); 
   };
 
-  const handleConfirmLeaveDiagnosis = () => {
+  const resetDiagnosisState = () => {
     handleImageCleared();
     setIsDiagnosisStarted(false);
+  };
+
+  const handleConfirmLeaveDiagnosis = () => {
+    resetDiagnosisState();
     setCurrentView('management');
     setIsConfirmModalOpen(false);
   };
@@ -56,13 +60,9 @@ const App: React.FC = () => {
       setIsConfirmModalOpen(true); // Open the modal instead of window.confirm
     } else {
       setCurrentView(targetView);
-      // If switching TO management from a non-active diagnosis (e.g., landing page)
-      // ensure state is clean.
       if (targetView === 'management') {
-        handleImageCleared(); 
-        setIsDiagnosisStarted(false);
+        resetDiagnosisState();
       }
-      // If switching to diagnosis, the existing logic of showing landing or active flow handles it.
     }
   };
 
@@ -158,7 +158,7 @@ const App: React.FC = () => {
         primaryAction={{
           label: uiStrings.confirmButtonLabel,
           onClick: handleConfirmLeaveDiagnosis,
-          className: 'btn-primary bg-[var(--status-red)] hover:bg-red-700 border-[var(--status-red)] hover:border-red-700 text-white', // Adjusted to use btn-primary and specific red
+          className: 'btn-destructive',
           ariaLabel: uiStrings.confirmButtonLabel
         }}
         secondaryAction={{

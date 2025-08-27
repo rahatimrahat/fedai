@@ -15,6 +15,6 @@ export const fetchPlantData = async (plantId: string): Promise<PlantData> => {
   } catch (error) {
     const fedaiError = handleApiError(error, 'Failed to fetch plant data.');
     logError(fedaiError, 'PlantDataFetch');
-    throw new Error(fedaiError.message);
+    throw fedaiError;
   }
 };
