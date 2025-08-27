@@ -83,46 +83,14 @@ export async function analyzePlantHealth(
       throw new Error(proxyErrorMsg);
     }
 
-    // Assuming the proxy now returns the DiseaseInfo structure directly
-    // and that if there was an error handled by the proxy (e.g. API key issue),
-    // it would have resulted in !response.ok and been caught above.
-    const parsedResponse = await response.json() as DiseaseInfo; // Expecting full DiseaseInfo on success
-      
-    // No need for baseReturn for success path if parsedResponse is complete.
-    // If parsedResponse might be partial, then merging with a base for default nulls is needed.
-    // For now, assume parsedResponse is the complete DiseaseInfo object on success.
-    // Ensure all fields are present, defaulting to null/false if not from backend.
-    const completeResponse: DiseaseInfo = {
-        diseaseName: parsedResponse.diseaseName || null,
-        definition: parsedResponse.definition || null,
-        possibleCauses: parsedResponse.possibleCauses || [],
-        structuredSolutions: parsedResponse.structuredSolutions || [],
-        aiWeatherRelevance: parsedResponse.aiWeatherRelevance || null,
-        similarPastCases: parsedResponse.similarPastCases || null,
-        error: parsedResponse.error || null, // Should be null on success
-        errorKey: parsedResponse.errorKey || null, // Should be null on success
-        followUpQuestion: parsedResponse.followUpQuestion || null,
-        imageQualityNotes: parsedResponse.imageQualityNotes || null,
-        differentialDiagnoses: parsedResponse.differentialDiagnoses || null,
-        qualitativeConfidence: parsedResponse.qualitativeConfidence || null,
-        errorCode: parsedResponse.errorCode || null, // Should be null on success
-        locationConsidered: parsedResponse.locationConsidered || false,
-        weatherConsidered: parsedResponse.weatherConsidered || false,
-        environmentalDataConsidered: parsedResponse.environmentalDataConsidered || false,
-    };
-    
-    // If the successful response still has an error field filled by the backend,
-    // it implies a handled error by the backend, treat as such.
-    if (completeResponse.error || completeResponse.errorKey || completeResponse.errorCode) {
-        throw new Error(completeResponse.error || `Analysis indicated an issue: ${completeResponse.errorKey || completeResponse.errorCode}`);
-    }
-
-    return completeResponse;
+    // The backend is expected to return a complete and valid DiseaseInfo object on success.
+    // Any errors should have been caught by the !response.ok check above.
+    return await response.json() as DiseaseInfo;
 
   } catch (error) {
     const fedaiError = handleApiError(error, 'Analysis failed');
     logError(fedaiError, 'PlantHealthAnalysis');
-    throw new Error(fedaiError.message);
+    throw fedaiError;
   }
 }
 
