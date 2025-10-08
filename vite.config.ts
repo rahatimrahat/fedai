@@ -18,6 +18,15 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      server: {
+        proxy: {
+          '/api': {
+            target: process.env.DOCKER_ENV === 'true' ? 'http://backend-dev:3001' : 'http://localhost:3001',
+            changeOrigin: true,
+            secure: false
+          }
+        }
       }
     };
 });

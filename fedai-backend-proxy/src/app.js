@@ -38,9 +38,9 @@ if (apiKey) {
 }
 
 // --- Import and Mount Routers ---
-// We inject the `ai` client into the Gemini controller/router
-const geminiController = require('./api/controllers/gemini.controller')(ai);
-const geminiRoutes = require('./api/routes/gemini.routes')(geminiController);
+// Use multi-provider controller instead of original
+const geminiController = require('./api/controllers/gemini.controller.multi-provider')();
+const geminiRoutes = require('./api/routes/gemini.routes.enhanced')(geminiController);
 const dataRoutes = require('./api/routes/data.routes');
 
 app.use('/api/gemini-proxy', geminiRoutes);

@@ -4,14 +4,14 @@ import { type ImageFile } from '@/types';
 import { UploadIcon, CameraIcon, XCircleIcon, InformationCircleIcon, ChevronDownIcon } from '@/components/icons';
 import { useLocalizationContext } from './LocalizationContext.tsx';
 import PhotoGuidelines from './PhotoGuidelines.tsx'; // Import the new component
-import { 
-    MAX_IMAGE_FILE_SIZE_BYTES, 
+import {
+    MAX_IMAGE_FILE_SIZE_BYTES,
     ALLOWED_IMAGE_MIME_TYPES,
     IMAGE_MAX_DIMENSION_PX,
     IMAGE_COMPRESSION_QUALITY,
     MAX_IMAGE_FILE_SIZE_MB
 } from '@/constants';
-import { useAnalysisContext } from './AnalysisContext.tsx';
+import { useAnalysisContext } from './AnalysisContext.multi-provider';
 
 
 async function compressImage(file: File): Promise<File> {

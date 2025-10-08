@@ -1,0 +1,23 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Install optimization dependencies
+RUN npm install express-rate-limit node-cache zod redis ioredis
+
+# Install nodemon for hot reload
+RUN npm install -g nodemon
+
+# Copy the rest of the application
+COPY . .
+
+EXPOSE 3001
+
+# Development command with nodemon for hot reload
+CMD ["nodemon", "server.js"]

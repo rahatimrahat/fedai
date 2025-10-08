@@ -1,6 +1,6 @@
 
-import React, { useRef, useEffect } from 'react'; 
-import { useAnalysisContext } from './AnalysisContext.tsx';
+import React, { useRef, useEffect } from 'react';
+import { useAnalysisContext } from './AnalysisContext.multi-provider';
 import { useLocalizationContext } from './LocalizationContext.tsx';
 import ImageInput from './ImageInput.tsx';
 import DiseaseResultCard from './DiseaseResultCard.tsx';

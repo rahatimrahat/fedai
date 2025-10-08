@@ -1,19 +1,20 @@
 
 import React, { useState, Suspense, lazy }  from 'react'; // Added Suspense, lazy
 import { motion } from 'framer-motion';
-import { useLocalizationContext } from './components/LocalizationContext.tsx'; 
+import { useLocalizationContext } from './components/LocalizationContext.tsx';
 import LanguageSelector from './components/LanguageSelector.tsx';
 import ServiceStatusFooter from './components/ServiceStatusFooter.tsx';
-import LoadingSpinner from './components/ui/LoadingSpinner.tsx'; 
+import LoadingSpinner from './components/ui/LoadingSpinner.tsx';
 import { LeafIcon, AdjustmentsHorizontalIcon, ExclamationTriangleIcon } from '@/components/icons';
-import UnfurlingLeafIcon from './components/icons/UnfurlingLeafIcon.tsx'; 
+import UnfurlingLeafIcon from './components/icons/UnfurlingLeafIcon.tsx';
 import { useServiceStatus } from './hooks/useServiceStatus';
 import AnalysisFlowController from './components/AnalysisFlowController.tsx';
-import { useAnalysisContext } from './components/AnalysisContext.tsx'; 
-import BounceIn from './components/ui/BounceIn.tsx'; 
+import { useAnalysisContext } from './components/AnalysisContext.multi-provider';
+import BounceIn from './components/ui/BounceIn.tsx';
 // import BackendServicesDashboard from './components/BackendServicesDashboard.tsx'; // Eager import removed
 import { AppView } from './types';
 import Modal from './components/ui/Modal.tsx';
+import AISettingsButton from './components/AISettings/AISettingsButton.tsx';
 
 const BackendServicesDashboard = lazy(() => import('./components/BackendServicesDashboard.tsx')); // Lazy import
 
@@ -87,6 +88,7 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              <AISettingsButton />
               <button
                 onClick={toggleView}
                 className="p-2.5 rounded-md hover:bg-[var(--glass-bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--primary-900)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-100)] transition-colors"

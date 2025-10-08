@@ -112,7 +112,7 @@ const Modal: React.FC<ModalProps> = ({
               )}
             </div>
 
-            <div className="text-sm text-[var(--text-primary)] mb-6 flex-grow" id="modal-description">
+            <div className="text-sm text-[var(--text-primary)] mb-6 flex-grow overflow-y-auto max-h-[calc(80vh-12rem)]" id="modal-description">
               {children}
             </div>
 
