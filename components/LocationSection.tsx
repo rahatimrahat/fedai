@@ -16,6 +16,9 @@ const LocationSection: React.FC = () => {
   } = useDataContext();
   const { uiStrings } = useLocalizationContext();
 
+  // Debug logging
+  console.log('[LocationSection] Render - status:', status, 'userLocation:', userLocation, 'permission:', locationPermission);
+
   const renderContent = () => {
     // The 'error' variable was mentioned in the old code comments but doesn't exist in DataContext.
     // We'll rely on 'status' and 'locationPermission' for error handling.
@@ -163,9 +166,19 @@ const LocationSection: React.FC = () => {
           </div>
         );
       default:
-        return null;
+        // Fallback for unknown status - show loading state
+        console.warn('[LocationSection] Unknown status:', status);
+        return (
+          <div className="flex items-center text-sm p-1 text-[var(--text-secondary)]">
+            <LoadingSpinner className="w-4 h-4 inline mr-2" />
+            <span>{uiStrings.locationStatusFetching || 'Loading location...'}</span>
+            <span className="ml-2 text-xs opacity-70">(Status: {status || 'undefined'})</span>
+          </div>
+        );
     }
   };
+
+  const content = renderContent();
 
   return (
     <section className="card p-6 h-full">
@@ -179,7 +192,11 @@ const LocationSection: React.FC = () => {
         </h2>
       </div>
       <div aria-live="polite" aria-atomic="true">
-        {renderContent()}
+        {content || (
+          <div className="text-sm text-[var(--status-yellow-text)] p-4 bg-[var(--status-yellow-bg)] rounded">
+            ⚠️ Location content not rendering. Status: {status || 'undefined'}, Location: {userLocation ? 'Available' : 'None'}
+          </div>
+        )}
       </div>
     </section>
   );
