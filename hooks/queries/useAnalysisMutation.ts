@@ -7,7 +7,7 @@ import {
   type EnvironmentalData,
   type DiseaseInfo
 } from '@/types';
-import { analyzePlantHealth } from '@/services/geminiService';
+import { analyzePlantHealth } from '@/services/geminiService.multi-provider';
 
 interface AnalysisMutationParams {
   imageFile: ImageFile;

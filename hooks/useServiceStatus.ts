@@ -5,7 +5,7 @@ import { testIpLocationService } from '@/services/ipLocationService';
 import { testWeatherService } from '@/services/weatherService';
 import { testElevationService } from '@/services/elevationService';
 import { testSoilService } from '@/services/soilApi';
-import { testGeminiService } from '@/services/geminiService';
+import { testGeminiService } from '@/services/geminiService.multi-provider';
 // No need to import useLocalizationContext here, as App.tsx will pass uiStrings to ServiceStatusFooter
 
 interface ServiceTestConfig {
