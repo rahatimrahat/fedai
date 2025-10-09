@@ -255,10 +255,12 @@ const getSoilData = async (req, res) => {
         return res.status(400).json({ error: 'Latitude and longitude are required.' });
     }
     
-    const properties = 'phh2o,soc,cec,nitrogen,sand,silt,clay,wv0033,wv1500';
+    // SoilGrids API requires separate property parameters (not comma-separated)
+    const properties = ['phh2o', 'soc', 'cec', 'nitrogen', 'sand', 'silt', 'clay', 'wv0033', 'wv1500'];
+    const propertyParams = properties.map(p => `property=${p}`).join('&');
     const depths = '0-5cm';
     const valueType = 'mean';
-    const soilGridsApiUrl = `${SOILGRIDS_API_URL_PREFIX}?lon=${longitude}&lat=${latitude}&property=${properties}&depth=${depths}&value=${valueType}`;
+    const soilGridsApiUrl = `${SOILGRIDS_API_URL_PREFIX}?lon=${longitude}&lat=${latitude}&${propertyParams}&depth=${depths}&value=${valueType}`;
     
     try {
         const data = await robustFetch(soilGridsApiUrl, {}, GEOLOCATION_API_TIMEOUT_MS + 6000);
