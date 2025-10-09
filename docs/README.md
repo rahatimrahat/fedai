@@ -9,6 +9,7 @@
 ### Setup & Configuration
 - **[AI_PROVIDER_SETUP.md](AI_PROVIDER_SETUP.md)** - Configure AI providers (Gemini, OpenRouter, Local AI)
 - **[LOCAL_AI_VISION_MODELS.md](LOCAL_AI_VISION_MODELS.md)** - Vision model setup for local AI
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Deploy to Render, environment variables, security
 - **[FRONTEND_README.md](FRONTEND_README.md)** - Frontend-specific documentation
 
 ### Development

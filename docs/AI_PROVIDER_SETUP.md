@@ -2,6 +2,8 @@
 
 **Fedai** now supports multiple AI providers, giving you flexibility in how you run plant health analysis.
 
+> **🔒 Security Note:** API keys are NEVER committed to the repository. They are stored in environment variables (for backend deployment) and localStorage (for frontend user settings).
+
 ---
 
 ## 🎯 Available AI Providers
