@@ -28,12 +28,20 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const {
     userLocation,
-    locationPermission,
-    locationStatusMessage,
-    isLoadingLocation,
-    fetchDeviceLocation, // Added
-    fetchIpLocationData, // Added
+    status: locationStatusMessage, // Renamed from 'status' to match expected name
+    error: locationError, // Get error message from useLocationLogic
+    fetchDeviceLocation,
+    fetchIpLocationData,
   } = useLocationLogic();
+
+  // locationPermission is the error message (string) for backward compatibility
+  const locationPermission = locationError || '';
+
+  // Derive isLoadingLocation from status
+  const isLoadingLocation = locationStatusMessage === 'idle' ||
+                            locationStatusMessage === 'checking-permission' ||
+                            locationStatusMessage === 'fetching-gps' ||
+                            locationStatusMessage === 'fetching-ip';
 
   const {
     weatherData,
