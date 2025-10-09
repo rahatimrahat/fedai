@@ -8,6 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "test:services": "vitest __tests__/services",
+    "test:components": "vitest __tests__/components",
+    "test:interactions": "vitest __tests__/interactions",
+    "test:e2e": "vitest __tests__/e2e",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
     "prepare": "husky install"
