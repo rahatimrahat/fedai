@@ -25,3 +25,18 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+
+# System files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.log
+
+# Test/debug files
+*.test.local.*
+*.debug.*
