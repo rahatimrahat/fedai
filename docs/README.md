@@ -3,7 +3,7 @@
 ## 📚 Documentation Index
 
 ### Getting Started
-- **[../QUICKSTART.md](../QUICKSTART.md)** - Get started in 3 easy steps
+- **[QUICKSTART.md](QUICKSTART.md)** - Get started in 3 easy steps
 - **[../README.md](../README.md)** - Main project overview
 
 ### Setup & Configuration
@@ -25,7 +25,7 @@
 ## 🚀 Quick Links
 
 ### For Users
-1. [Get Started](../QUICKSTART.md) - Setup in 3 steps
+1. [Get Started](QUICKSTART.md) - Setup in 3 steps
 2. [Setup AI Provider](AI_PROVIDER_SETUP.md) - Configure your AI
 3. [Troubleshooting](TROUBLESHOOTING.md) - Fix common issues
 
@@ -43,18 +43,27 @@
 ```
 fedai/
 ├── README.md                          # Main readme
-├── QUICKSTART.md                      # Quick start guide
 └── docs/                              # Documentation folder
-    ├── README.md                      # This file
-    ├── AI_PROVIDER_SETUP.md           # Setup guide
-    ├── CLAUDE.md                      # AI guidance
-    ├── CLEANUP_PLAN.md                # Cleanup docs
-    ├── FRONTEND_README.md             # Frontend docs
-    ├── IMPLEMENTATION_STATUS.md       # Technical docs
-    ├── LOCAL_AI_VISION_MODELS.md      # Vision models
-    ├── OPTIMIZATION_POINTS.md         # Performance
-    ├── TESTING_GUIDE.md               # Testing
-    └── TROUBLESHOOTING.md             # Debug guide
+    ├── README.md                      # This file (documentation index)
+    ├── QUICKSTART.md                  # Quick start guide (3 steps)
+    ├── AI_PROVIDER_SETUP.md           # AI provider setup guide
+    ├── DEPLOYMENT.md                  # Deployment guide
+    ├── TROUBLESHOOTING.md             # Debug and troubleshooting
+    ├── TESTING.md                     # Test suite documentation
+    ├── TESTING_GUIDE.md               # Comprehensive test guide
+    ├── FRONTEND_README.md             # Frontend architecture
+    ├── LOCAL_AI_VISION_MODELS.md      # Local AI vision models
+    ├── CLAUDE.md                      # AI assistant guidance
+    ├── IMPLEMENTATION_STATUS.md       # Implementation details
+    ├── OPTIMIZATION_POINTS.md         # Performance optimization
+    ├── CLEANUP_PLAN.md                # Cleanup documentation
+    └── reference/                     # Reference documentation
+        ├── CHANGELOG.md               # Version history
+        ├── IMPROVEMENTS_COMPLETED.md  # Technical improvements
+        ├── IMPROVEMENT_ROADMAP.md     # Future improvements
+        ├── RELEASE_SUMMARY.md         # Release summary
+        ├── TEST_STATUS.md             # Test status report
+        └── TEST_SUMMARY.md            # Test summary
 ```
 
 ## 🆘 Need Help?

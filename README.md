@@ -117,7 +117,7 @@ Fedai is a full-stack web application with clear separation of concerns:
 Access the deployed application at [your-deployment-url] (coming soon)
 
 ### For Developers
-Get started in 3 steps - see **[QUICKSTART.md](QUICKSTART.md)**
+Get started in 3 steps - see **[QUICKSTART.md](docs/QUICKSTART.md)**
 
 ```bash
 # 1. Clone and setup backend
@@ -142,10 +142,12 @@ docker-compose -f docker-compose.dev.yml up
 ```
 
 📖 **Full Documentation:**
-- [Quick Start Guide](QUICKSTART.md) - 3-step setup
+- [Quick Start Guide](docs/QUICKSTART.md) - 3-step setup
 - [AI Provider Setup](docs/AI_PROVIDER_SETUP.md) - Configure Gemini/OpenRouter/Local AI
 - [Deployment Guide](docs/DEPLOYMENT.md) - Deploy to Render
 - [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues
+- [Changelog](docs/reference/CHANGELOG.md) - Version history
+- [Testing Guide](docs/TESTING.md) - Test suite documentation
 
 ## Key Features
 
@@ -185,4 +187,4 @@ Fedai has been optimized for performance and reliability with several key improv
 - **Rate Limiting**: Endpoint-specific rate limits (20 AI analyses/hour, 60 data requests/15min)
 - **Secure API Key Management**: All API keys stored server-side only
 
-See [IMPROVEMENTS_COMPLETED.md](IMPROVEMENTS_COMPLETED.md) for detailed technical information.
+See [IMPROVEMENTS_COMPLETED.md](docs/reference/IMPROVEMENTS_COMPLETED.md) for detailed technical information.
