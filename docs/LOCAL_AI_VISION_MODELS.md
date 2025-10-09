@@ -9,7 +9,7 @@
 ### Best for Plant Analysis (Tested & Working)
 
 1. **Qwen2-VL 7B Instruct** ⭐ **RECOMMENDED**
-   - Model: `Qwen/Qwen2-VL-7B-Instruct`
+   - Model: `Qwen/Qwen2.5-VL-7B-Instruct`
    - Size: ~8GB VRAM
    - Quality: Excellent vision understanding and reasoning
    - Speed: Fast inference, optimized performance
@@ -24,15 +24,7 @@
    - Special: Supports high-resolution images
    - Best for: Users with limited VRAM (6-8GB)
 
-3. **LLaVA 1.6 Vicuna 13B** (Classic Choice)
-   - Model: `llava-v1.6-vicuna-13b`
-   - Size: ~8GB VRAM
-   - Quality: Proven reliable image understanding
-   - Speed: Fast on modern GPUs
-   - Special: Well-established, stable model
-   - Best for: Users wanting tried-and-tested reliability
-
-4. **InternVL 2.5 8B** (High Accuracy)
+3. **InternVL 2.5 8B** (High Accuracy)
    - Model: `OpenGVLab/InternVL2_5-8B`
    - Size: ~16GB
    - Quality: Very high accuracy
@@ -40,17 +32,13 @@
 
 ### Alternative Options
 
-5. **CogVLM2-LLaMA3** (Advanced)
+4. **CogVLM2-LLaMA3** (Advanced)
    - Model: `THUDM/cogvlm2-llama3-chat-19B`
    - Size: ~19GB (requires strong GPU)
    - Quality: Very high
    - Speed: Slower but very accurate
 
-6. **LLaVA-NeXT (LLaVA 1.7)** (Latest)
-   - Model: `llava-hf/llava-v1.6-34b`
-   - Size: ~34GB (high-end GPU required)
-   - Quality: State-of-the-art
-   - Speed: Slow but best quality
+
 
 ## 🚀 Quick Setup with LM Studio
 
@@ -60,12 +48,12 @@
 2. Click "Search" or "Discover"
 3. Search for **recommended model**:
    ```
-   Qwen2-VL-7B-Instruct
+   Qwen2.5-VL-7B-Instruct
    ```
    Or alternatives:
    ```
    MiniCPM-V-2.6          (if you have limited VRAM)
-   llava-v1.6-vicuna-13b  (classic choice)
+   
    ```
 4. Download the model (GGUF format, Q4_K_M quantization recommended for balance)
 
@@ -182,7 +170,7 @@ Base URL: `http://localhost:5001/v1`
 - **Vision Models**: https://huggingface.co/models?pipeline_tag=image-text-to-text
 - **LLaVA Models**: https://huggingface.co/liuhaotian
 - **MiniCPM-V**: https://huggingface.co/openbmb/MiniCPM-V-2_6
-- **Qwen2-VL**: https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct
+- **Qwen2-VL**: https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct
 
 ## ⚠️ Remember
 
