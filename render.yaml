@@ -1,0 +1,33 @@
+services:
+  # Backend API Service
+  - type: web
+    name: fedai-backend
+    runtime: node
+    rootDir: fedai-backend-proxy
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPEN_PLANTBOOK_API_KEY
+        sync: false
+    healthCheckPath: /api/gemini-proxy/status
+
+  # Frontend Service (optional - if you want to deploy frontend on Render too)
+  # - type: web
+  #   name: fedai-frontend
+  #   runtime: node
+  #   buildCommand: npm install && npm run build
+  #   startCommand: npm run preview -- --port $PORT --host 0.0.0.0
+  #   envVars:
+  #     - key: NODE_ENV
+  #       value: production
+  #     - key: VITE_API_URL
+  #       fromService:
+  #         type: web
+  #         name: fedai-backend
+  #         property: host
