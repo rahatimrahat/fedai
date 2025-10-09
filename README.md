@@ -70,7 +70,7 @@ Fedai is a full-stack web application with clear separation of concerns:
 - **Features:** Image upload, AI settings, multi-language support, real-time analysis
 - **Location:** All source files in root directory (see structure above)
 - **Unique Approach:** Uses `esm.sh/tsx` for dev + Vite for production builds
-- 📖 [Frontend Documentation](./docs/FRONTEND_README.md)
+- 📖 [Frontend Documentation](docs/FRONTEND_README.md)
 
 ### **Backend Proxy (fedai-backend-proxy/)**
 - **Tech Stack:** Node.js, Express, multi-provider AI integration
@@ -80,7 +80,7 @@ Fedai is a full-stack web application with clear separation of concerns:
   - Weather data (Open-Meteo)
   - Soil data (SoilGrids)
   - Plant database (OpenPlantBook)
-- 📖 [Backend Documentation](./fedai-backend-proxy/README.md)
+- 📖 [Backend Documentation](fedai-backend-proxy/README.md)
 
 ### **Why This Structure?**
 ✅ **Security:** API keys never exposed to browser
@@ -94,7 +94,7 @@ Fedai is a full-stack web application with clear separation of concerns:
 Access the deployed application at [your-deployment-url] (coming soon)
 
 ### For Developers
-Get started in 3 steps - see **[QUICKSTART.md](./QUICKSTART.md)**
+Get started in 3 steps - see **[QUICKSTART.md](QUICKSTART.md)**
 
 ```bash
 # 1. Clone and setup backend
@@ -119,10 +119,10 @@ docker-compose -f docker-compose.dev.yml up
 ```
 
 📖 **Full Documentation:**
-- [Quick Start Guide](./QUICKSTART.md) - 3-step setup
-- [AI Provider Setup](./docs/AI_PROVIDER_SETUP.md) - Configure Gemini/OpenRouter/Local AI
-- [Deployment Guide](./docs/DEPLOYMENT.md) - Deploy to Render
-- [Troubleshooting](./docs/TROUBLESHOOTING.md) - Common issues
+- [Quick Start Guide](QUICKSTART.md) - 3-step setup
+- [AI Provider Setup](docs/AI_PROVIDER_SETUP.md) - Configure Gemini/OpenRouter/Local AI
+- [Deployment Guide](docs/DEPLOYMENT.md) - Deploy to Render
+- [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues
 
 ## Key Features
 
