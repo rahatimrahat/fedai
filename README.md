@@ -2,9 +2,53 @@
 
 **Fedai is an intelligent assistant designed to help you understand and improve your plant's health.** By leveraging advanced image analysis and contextual data (like your location, local weather, and soil characteristics), Fedai provides insightful analysis and actionable solutions.
 
-This project is composed of two main parts:
-*   A **frontend application** (React/TypeScript) whose files are located primarily in the root directory (e.g., `App.tsx`, `index.html`, `components/`, `services/`, `hooks/`, etc.).
-*   A **backend proxy server** located in the `fedai-backend-proxy/` directory.
+## 📁 Repository Structure
+
+This project uses an **intentional monorepo structure**:
+
+```
+fedai/
+├── 📂 Frontend (Root Directory)
+│   ├── components/        # React components
+│   ├── contexts/          # React contexts (AI Settings, etc.)
+│   ├── hooks/             # Custom React hooks
+│   ├── pages/             # Page components
+│   ├── providers/         # AI provider implementations
+│   ├── services/          # API service clients
+│   ├── types/             # TypeScript type definitions
+│   ├── utils/             # Utility functions
+│   ├── App.tsx            # Main app component
+│   ├── index.tsx          # React entry point
+│   ├── index.html         # HTML entry with import maps
+│   ├── types.ts           # Centralized types
+│   ├── constants.ts       # App constants
+│   ├── localization.ts    # Multi-language support
+│   ├── theme.css          # Global styles
+│   └── package.json       # Frontend dependencies
+│
+├── 📂 fedai-backend-proxy/  # Backend API Server
+│   ├── src/
+│   │   ├── api/           # Controllers, routes, middleware
+│   │   ├── services/      # AI provider services
+│   │   └── utils/         # Backend utilities
+│   ├── server.js          # Server entry point
+│   └── package.json       # Backend dependencies
+│
+├── 📂 docs/               # Comprehensive documentation
+│   ├── QUICKSTART.md      # 3-step setup guide
+│   ├── DEPLOYMENT.md      # Production deployment
+│   ├── AI_PROVIDER_SETUP.md
+│   └── ...
+│
+└── 📝 Configuration Files
+    ├── docker-compose.yml     # Production Docker setup
+    ├── docker-compose.dev.yml # Development Docker setup
+    ├── render.yaml            # Render deployment config
+    ├── vite.config.ts         # Vite bundler config
+    └── tsconfig.json          # TypeScript config
+```
+
+**Why frontend in root?** This structure supports our unique dev approach using `esm.sh/tsx` for browser-based TypeScript compilation during development, while using Vite for optimized production builds.
 
 ## For Everyone: What is Fedai?
 
@@ -17,26 +61,68 @@ Imagine you have a plant that looks sick, but you're not sure what's wrong or ho
 
 It's designed to be easy to use, even if you don't know much about plant diseases or technology.
 
-## For Technical Users: Project Overview
+## 🏗️ Architecture
 
-Fedai is a web application with the following components:
+Fedai is a full-stack web application with clear separation of concerns:
 
-*   **Frontend Application:** A React/TypeScript application that provides the user interface. Users interact with this part to upload images, view analysis, and get recommendations. Most of its source code (`App.tsx`, `index.html`, `index.tsx`, `components/`, `hooks/`, `services/`, `pages/`, `package.json` etc.) is located in the project root.
-    *   [Learn more about the Frontend](./FRONTEND_README.md)
-*   **Backend Proxy Server:** A Node.js Express server that securely communicates with the Google Gemini API for the core AI-driven plant health analysis. It also handles requests for other external data like weather and soil information. This is located in the `fedai-backend-proxy/` directory.
-    *   [Learn more about the Backend](./fedai-backend-proxy/README.md)
+### **Frontend (Root Directory)**
+- **Tech Stack:** React 19, TypeScript, Vite, Tailwind CSS
+- **Features:** Image upload, AI settings, multi-language support, real-time analysis
+- **Location:** All source files in root directory (see structure above)
+- **Unique Approach:** Uses `esm.sh/tsx` for dev + Vite for production builds
+- 📖 [Frontend Documentation](./docs/FRONTEND_README.md)
 
-**Why this structure?**
-*   **Security:** The backend proxy ensures that sensitive information, like API keys, is never exposed to the user's browser.
-*   **Modularity:** While the frontend files are in the root, the backend is a distinct module. This separation helps manage complexity.
-*   **Efficiency:** The frontend can focus on user experience, while the backend handles complex computations and external API interactions.
+### **Backend Proxy (fedai-backend-proxy/)**
+- **Tech Stack:** Node.js, Express, multi-provider AI integration
+- **Purpose:** Secure API key management, external service orchestration
+- **Services:**
+  - AI Providers (Gemini, OpenRouter, Local AI)
+  - Weather data (Open-Meteo)
+  - Soil data (SoilGrids)
+  - Plant database (OpenPlantBook)
+- 📖 [Backend Documentation](./fedai-backend-proxy/README.md)
 
-## Getting Started
+### **Why This Structure?**
+✅ **Security:** API keys never exposed to browser
+✅ **Modularity:** Clear backend/frontend separation
+✅ **Flexibility:** Support for multiple AI providers
+✅ **Developer Experience:** Simplified dev workflow with hot reload
 
-1.  **For Users:** If you want to use Fedai, you'll typically access a deployed version of the application through your web browser.
-2.  **For Developers:** If you want to contribute to or run a local version of Fedai:
-    *   First, set up and run the [Backend Proxy Server](./fedai-backend-proxy/README.md) (located in `fedai-backend-proxy/`).
-    *   Then, set up and run the [Frontend Application](./FRONTEND_README.md) (files located in the project root).
+## 🚀 Quick Start
+
+### For Users
+Access the deployed application at [your-deployment-url] (coming soon)
+
+### For Developers
+Get started in 3 steps - see **[QUICKSTART.md](./QUICKSTART.md)**
+
+```bash
+# 1. Clone and setup backend
+cd fedai-backend-proxy
+npm install
+# Add API keys to .env file
+
+# 2. Setup frontend (in separate terminal)
+cd ..
+npm install
+
+# 3. Run both services
+npm run dev          # Frontend (http://localhost:5173)
+cd fedai-backend-proxy && npm start  # Backend (http://localhost:3001)
+```
+
+### Using Docker
+```bash
+docker-compose -f docker-compose.dev.yml up
+# Frontend: http://localhost:5173
+# Backend: http://localhost:3001
+```
+
+📖 **Full Documentation:**
+- [Quick Start Guide](./QUICKSTART.md) - 3-step setup
+- [AI Provider Setup](./docs/AI_PROVIDER_SETUP.md) - Configure Gemini/OpenRouter/Local AI
+- [Deployment Guide](./docs/DEPLOYMENT.md) - Deploy to Render
+- [Troubleshooting](./docs/TROUBLESHOOTING.md) - Common issues
 
 ## Key Features
 
