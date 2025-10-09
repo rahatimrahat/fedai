@@ -4,7 +4,7 @@
 
 ### 1. Start Docker Containers
 ```bash
-cd /Users/barisnacierzeren/Downloads/GitHub/fedai
+cd /path/to/fedai
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
