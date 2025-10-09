@@ -53,33 +53,113 @@ const LocationSection: React.FC = () => {
         );
       case 'success':
         return (
-          <p className="text-sm p-1 text-[var(--status-green-text)] font-medium">
-            {userLocation?.accuracyMessage}
-          </p>
+          <div className="space-y-3">
+            {/* Location Display */}
+            <div className="bg-[var(--status-green-bg)] border border-[var(--status-green)] rounded-lg p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-[var(--status-green-text)] mb-2">
+                    📍 {userLocation?.city || uiStrings.locationUnknown || 'Unknown Location'}
+                    {userLocation?.country && `, ${userLocation.country}`}
+                  </p>
+                  <p className="text-xs text-[var(--text-secondary)] font-mono">
+                    {userLocation?.latitude.toFixed(4)}°, {userLocation?.longitude.toFixed(4)}°
+                  </p>
+                </div>
+                <div className="ml-3">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--status-green)] text-white">
+                    {userLocation?.source === 'gps' ? '🎯 GPS' : '🌐 IP'}
+                  </span>
+                </div>
+              </div>
+              {userLocation?.accuracyMessage && (
+                <p className="text-xs text-[var(--status-green-text)] mt-2 italic">
+                  {userLocation.accuracyMessage}
+                </p>
+              )}
+            </div>
+
+            {/* Contextual Data Status */}
+            <div className="text-xs text-[var(--text-secondary)] pl-1">
+              {uiStrings.locationSuccessInfo || 'Weather and soil data will be loaded based on this location.'}
+            </div>
+          </div>
         );
       case 'error-permission':
         return (
-          <div className="text-sm p-1 text-[var(--status-red-text)]">
-            <p>{uiStrings.locationPermissionDeniedUserMessage}</p>
-            <button
-              onClick={() => fetchDeviceLocation()}
-              className="mt-2 px-4 py-2 text-sm font-medium text-white bg-[var(--accent-red-600)] rounded-md hover:bg-[var(--accent-red-700)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-red-600)]"
-            >
-              {uiStrings.tryAgainButton || "Try Again"}
-            </button>
+          <div className="bg-[var(--status-red-bg)] border border-[var(--status-red)] rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <span className="text-2xl">🚫</span>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-[var(--status-red-text)] mb-1">
+                  {uiStrings.locationPermissionDenied || 'Location Access Blocked'}
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mb-3">
+                  {uiStrings.locationPermissionDeniedUserMessage}
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mb-3">
+                  <strong>{uiStrings.reasonLabel || 'Reason:'}:</strong> {uiStrings.locationPermissionDeniedReason || 'Browser location permission denied. Enable it in your browser settings to use GPS location.'}
+                </p>
+                <button
+                  onClick={() => fetchDeviceLocation()}
+                  className="mt-2 px-4 py-2 text-sm font-medium text-white bg-[var(--accent-red-600)] rounded-md hover:bg-[var(--accent-red-700)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-red-600)]"
+                >
+                  {uiStrings.tryAgainButton || "Try Again"}
+                </button>
+              </div>
+            </div>
           </div>
         );
       case 'error-fetch':
+        return (
+          <div className="bg-[var(--status-red-bg)] border border-[var(--status-red)] rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <span className="text-2xl">⚠️</span>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-[var(--status-red-text)] mb-1">
+                  {uiStrings.locationErrorFetch || 'GPS Location Failed'}
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mb-3">
+                  <strong>{uiStrings.reasonLabel || 'Reason'}:</strong> {uiStrings.locationErrorFetchReason || 'Failed to retrieve GPS coordinates. This could be due to device settings or browser limitations.'}
+                </p>
+                <button
+                  onClick={() => fetchIpLocationData()}
+                  className="mt-2 px-4 py-2 text-sm font-medium text-white bg-[var(--primary-500)] rounded-md hover:bg-[var(--primary-600)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-500)]"
+                >
+                  {uiStrings.useIpLocationButton || "Use IP-Based Location Instead"}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
       case 'error-ip-fetch':
         return (
-          <div className="text-sm p-1 text-[var(--status-red-text)]">
-            <p>{uiStrings.locationErrorGeneral}</p>
-            <button
-              onClick={() => fetchDeviceLocation()}
-              className="mt-2 px-4 py-2 text-sm font-medium text-white bg-[var(--accent-red-600)] rounded-md hover:bg-[var(--accent-red-700)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent-red-600)]"
-            >
-              {uiStrings.tryAgainButton || "Try Again"}
-            </button>
+          <div className="bg-[var(--status-red-bg)] border border-[var(--status-red)] rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <span className="text-2xl">🌐❌</span>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-[var(--status-red-text)] mb-1">
+                  {uiStrings.locationErrorIpFetch || 'IP Location Failed'}
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mb-3">
+                  <strong>{uiStrings.reasonLabel || 'Reason'}:</strong> {uiStrings.locationErrorIpFetchReason || 'Unable to detect location from your IP address. This might be due to VPN usage, network issues, or IP geolocation service unavailability.'}
+                </p>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => fetchDeviceLocation()}
+                    className="mt-2 px-4 py-2 text-sm font-medium text-white bg-[var(--primary-500)] rounded-md hover:bg-[var(--primary-600)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-500)]"
+                  >
+                    {uiStrings.tryGpsButton || "Try GPS Location"}
+                  </button>
+                  <button
+                    onClick={() => fetchIpLocationData()}
+                    className="mt-2 px-4 py-2 text-sm font-medium text-[var(--text-secondary)] bg-[var(--surface-secondary)] rounded-md hover:bg-[var(--surface-tertiary)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-500)]"
+                  >
+                    {uiStrings.retryButton || "Retry IP Location"}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         );
       default:
