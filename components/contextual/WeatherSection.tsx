@@ -77,7 +77,8 @@ const HistoricalWeatherDisplay: React.FC<{ data: MonthlyAverageData, uiStrings: 
 const WeatherSection: React.FC = () => {
   const {
     weatherData, isLoadingWeather, weatherDisplayTab, handleWeatherTabChange,
-    weatherTabCurrentRef, weatherTabRecentRef, weatherTabHistoricalRef, 
+    weatherTabCurrentRef, weatherTabRecentRef, weatherTabHistoricalRef,
+    retryFetch,
   } = useDataContext();
   const { uiStrings, selectedLanguage } = useLocalizationContext();
   const [showDetailedWeather, setShowDetailedWeather] = useState(false);
@@ -104,7 +105,14 @@ const WeatherSection: React.FC = () => {
         <div className="flex flex-col items-center justify-center text-center p-4 h-full bg-[var(--status-red-bg)] rounded-lg border border-[var(--status-red)]">
           <ExclamationTriangleIcon className="w-12 h-12 text-[var(--status-red-text)] mb-3" />
           <p className="text-md font-semibold text-[var(--status-red-text)]">{uiStrings.errorTitle}</p>
-          <p className="text-sm text-[var(--status-red-text)] opacity-90 mt-1">{weatherData.error}</p>
+          <p className="text-sm text-[var(--status-red-text)] opacity-90 mt-1 mb-3">{weatherData.error}</p>
+          <button
+            onClick={retryFetch}
+            className="px-4 py-2 text-sm font-medium text-white bg-[var(--primary-500)] rounded-md hover:bg-[var(--primary-600)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-500)] transition-colors"
+            aria-label="Retry fetching weather data"
+          >
+            {uiStrings.retry || 'Retry'}
+          </button>
         </div>
       );
     }

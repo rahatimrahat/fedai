@@ -25,7 +25,8 @@ import {
 } from '@/components/icons';
 import { useElementScroll } from '@/hooks/useElementScroll';
 import { useModalAccessibility } from '@/hooks/useModalAccessibility';
-import { useFocusOnCondition } from '@/hooks/useFocusOnCondition'; // Import the new hook
+import { useFocusOnCondition } from '@/hooks/useFocusOnCondition';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 const MemoizedDiseaseResultCard = React.memo(DiseaseResultCard);
 
@@ -89,6 +90,23 @@ const AnalysisFlowController: React.FC = () => {
       resultsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [diseaseInfo, isLoadingAnalysis]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts(
+    [
+      {
+        key: 'Enter',
+        ctrlKey: true,
+        handler: () => {
+          if (!isAnalyzeDisabled && imageFile) {
+            triggerAnalysis();
+          }
+        },
+        enabled: !isLoadingAnalysis && !!imageFile,
+      },
+    ],
+    [isAnalyzeDisabled, imageFile, isLoadingAnalysis, triggerAnalysis]
+  );
 
 
   return (

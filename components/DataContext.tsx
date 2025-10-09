@@ -20,6 +20,7 @@ interface DataContextType {
   weatherTabCurrentRef: React.RefObject<HTMLButtonElement>;
   weatherTabRecentRef: React.RefObject<HTMLButtonElement>;
   weatherTabHistoricalRef: React.RefObject<HTMLButtonElement>;
+  retryFetch: () => void; // Added for manual data refetch
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -44,6 +45,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     weatherTabCurrentRef,
     weatherTabRecentRef,
     weatherTabHistoricalRef,
+    retryFetch,
   } = useContextualData(userLocation);
 
   // Determine if all initial data loading is complete
@@ -66,6 +68,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     weatherTabCurrentRef,
     weatherTabRecentRef,
     weatherTabHistoricalRef,
+    retryFetch, // Added
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

@@ -3,77 +3,14 @@ import React, { useRef, useState } from 'react';
 import { type ImageFile } from '@/types';
 import { UploadIcon, CameraIcon, XCircleIcon, InformationCircleIcon, ChevronDownIcon } from '@/components/icons';
 import { useLocalizationContext } from './LocalizationContext.tsx';
-import PhotoGuidelines from './PhotoGuidelines.tsx'; // Import the new component
+import PhotoGuidelines from './PhotoGuidelines.tsx';
 import {
     MAX_IMAGE_FILE_SIZE_BYTES,
     ALLOWED_IMAGE_MIME_TYPES,
-    IMAGE_MAX_DIMENSION_PX,
-    IMAGE_COMPRESSION_QUALITY,
     MAX_IMAGE_FILE_SIZE_MB
 } from '@/constants';
 import { useAnalysisContext } from './AnalysisContext.multi-provider';
-
-
-async function compressImage(file: File): Promise<File> {
-  if (!ALLOWED_IMAGE_MIME_TYPES.includes(file.type) || file.size < 100 * 1024) { 
-      return file;
-  }
-
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => {
-      let { width, height } = img;
-      const aspectRatio = width / height;
-
-      if (width > IMAGE_MAX_DIMENSION_PX || height > IMAGE_MAX_DIMENSION_PX) {
-        if (width > height) {
-          width = IMAGE_MAX_DIMENSION_PX;
-          height = IMAGE_MAX_DIMENSION_PX / aspectRatio;
-        } else {
-          height = IMAGE_MAX_DIMENSION_PX;
-          width = IMAGE_MAX_DIMENSION_PX * aspectRatio;
-        }
-      }
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        // console.error('Failed to get canvas context'); // Removed for less console noise
-        return resolve(file); 
-      }
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const outputMimeType = file.type === 'image/webp' ? 'image/webp' : 'image/jpeg';
-      
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            const compressedFile = new File([blob], file.name, {
-              type: outputMimeType,
-              lastModified: Date.now(),
-            });
-            // console.log(`Compressed ${file.name} from ${file.size} to ${compressedFile.size} bytes, type: ${outputMimeType}`); // Removed for less console noise
-            resolve(compressedFile);
-          } else {
-            // console.error('Canvas toBlob failed, returning original file.'); // Removed for less console noise
-            resolve(file); 
-          }
-        },
-        outputMimeType,
-        IMAGE_COMPRESSION_QUALITY
-      );
-      URL.revokeObjectURL(img.src); 
-    };
-    img.onerror = (error) => {
-      console.error('Image loading error for compression:', error);
-      URL.revokeObjectURL(img.src); 
-      resolve(file); 
-    };
-  });
-}
+import { compressImageAsync } from '@/utils/imageCompression';
 
 
 const ImageInput: React.FC = () => {
@@ -89,8 +26,8 @@ const ImageInput: React.FC = () => {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     let file = event.target.files?.[0];
     if (file) {
-      const compressedFile = await compressImage(file);
-      processFile(compressedFile); 
+      const compressedFile = await compressImageAsync(file);
+      processFile(compressedFile);
     }
     event.target.value = ''; // Reset file input
   };

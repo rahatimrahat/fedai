@@ -15,6 +15,7 @@ import BounceIn from './components/ui/BounceIn.tsx';
 import { AppView } from './types';
 import Modal from './components/ui/Modal.tsx';
 import AISettingsButton from './components/AISettings/AISettingsButton.tsx';
+import ErrorBoundary from './components/ErrorBoundary.tsx';
 
 const BackendServicesDashboard = lazy(() => import('./components/BackendServicesDashboard.tsx')); // Lazy import
 
@@ -115,9 +116,11 @@ const App: React.FC = () => {
           )}
 
           {currentView === 'management' && (
-            <Suspense fallback={<div className="flex justify-center items-center min-h-[300px]"><LoadingSpinner className="w-10 h-10" /></div>}>
-              <BackendServicesDashboard />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<div className="flex justify-center items-center min-h-[300px]"><LoadingSpinner className="w-10 h-10" /></div>}>
+                <BackendServicesDashboard />
+              </Suspense>
+            </ErrorBoundary>
           )}
 
           {currentView === 'diagnosis' && !isDiagnosisStarted && (
@@ -134,7 +137,7 @@ const App: React.FC = () => {
                   onClick={handleStartDiagnosis}
                   className="btn btn-primary text-lg px-8 py-3.5 shadow-lg hover:shadow-xl transform hover:scale-105"
                   aria-label={uiStrings.startDiagnosisButton}
-                  animate={{ scale: [1, 1.02, 1] }} 
+                  animate={{ scale: [1, 1.02, 1] }}
                   transition={{ duration: 2, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
                 >
                   {uiStrings.startDiagnosisButton}
@@ -144,7 +147,9 @@ const App: React.FC = () => {
           )}
 
           {currentView === 'diagnosis' && isDiagnosisStarted && (
-            <AnalysisFlowController />
+            <ErrorBoundary>
+              <AnalysisFlowController />
+            </ErrorBoundary>
           )}
 
         </div>

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { type UserLocation, type WeatherData, type EnvironmentalData, type UiStrings, LanguageCode, DailyWeatherData } from '../types';
 import { fetchWeatherData } from '@/services/weatherService';
 import { fetchElevation } from '@/services/elevationService';
@@ -17,13 +17,27 @@ export function useContextualData(userLocation: UserLocation | null) {
 
   const [environmentalData, setEnvironmentalData] = useState<EnvironmentalData | null>(null);
   const [isLoadingEnvironmental, setIsLoadingEnvironmental] = useState<boolean>(false);
+  const [retryTrigger, setRetryTrigger] = useState<number>(0);
 
-  // Ref to track the current fetch operation to prevent race conditions
-  const fetchIdRef = useRef<number>(0);
+  // AbortController to cancel ongoing fetch operations and prevent race conditions
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Retry function for manual refetch
+  const retryFetch = useCallback(() => {
+    setRetryTrigger(prev => prev + 1);
+  }, []);
 
   useEffect(() => {
     if (userLocation) {
-      const currentFetchId = ++fetchIdRef.current; // Increment fetch ID for this effect run
+      // Cancel any ongoing fetch operations from previous effect runs
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // Create new AbortController for this fetch operation
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+      const signal = abortController.signal;
 
       const fetchData = async () => {
         if (!weatherData || (!weatherData.current && !weatherData.recentMonthlyAverage && !weatherData.historicalMonthlyAverage && !weatherData.recentDailyRawData && !weatherData.errorKey)) {
@@ -67,8 +81,8 @@ export function useContextualData(userLocation: UserLocation | null) {
         const weatherFetcher = async () => {
             try {
               const newGenericWeatherData = await fetchWeatherData(userLocation);
-              // Only update state if this is the latest fetch operation
-              if (currentFetchId === fetchIdRef.current) {
+              // Only update state if not aborted
+              if (!signal.aborted) {
                   setWeatherData(prev => ({
                     current: newGenericWeatherData.current,
                     recentDailyRawData: newGenericWeatherData.recentDailyRawData,
@@ -80,9 +94,13 @@ export function useContextualData(userLocation: UserLocation | null) {
                   }));
               }
             } catch (err) {
+                // Ignore AbortError - it's expected when component unmounts or location changes
+                if (err instanceof Error && err.name === 'AbortError') {
+                  return;
+                }
                 console.error("Weather fetch error in useContextualData:", err);
-                // Only update state if this is the latest fetch operation
-                if (currentFetchId === fetchIdRef.current) {
+                // Only update state if not aborted
+                if (!signal.aborted) {
                     setWeatherData(prevData => ({
                         ...(prevData || {}),
                         current: null,
@@ -95,8 +113,8 @@ export function useContextualData(userLocation: UserLocation | null) {
                     }));
                 }
             } finally {
-                // Only update loading state if this is the latest fetch operation
-                if (currentFetchId === fetchIdRef.current) {
+                // Only update loading state if not aborted
+                if (!signal.aborted) {
                     setIsLoadingWeather(false);
                 }
             }
@@ -152,8 +170,8 @@ export function useContextualData(userLocation: UserLocation | null) {
                         envDataToSet.error = (soilResult.reason instanceof Error ? soilResult.reason.message : String(soilResult.reason));
                     }
                 }
-                // Only update state if this is the latest fetch operation
-                if (currentFetchId === fetchIdRef.current) {
+                // Only update state if not aborted
+                if (!signal.aborted) {
                     setEnvironmentalData((prev) => {
                         const currentState = prev ?? { dataTimestamp: new Date().toISOString() };
                         return {
@@ -163,9 +181,13 @@ export function useContextualData(userLocation: UserLocation | null) {
                     });
                 }
             } catch (criticalError) { // Catch for Promise.allSettled itself or critical unhandled issue
+                 // Ignore AbortError - it's expected when component unmounts or location changes
+                 if (criticalError instanceof Error && criticalError.name === 'AbortError') {
+                   return;
+                 }
                  console.error("Critical error in environmental data Promise.allSettled block:", criticalError);
-                 // Only update state if this is the latest fetch operation
-                 if (currentFetchId === fetchIdRef.current) {
+                 // Only update state if not aborted
+                 if (!signal.aborted) {
                      setEnvironmentalData({
                          errorKey: 'environmentalDataUnavailable',
                          error: (criticalError instanceof Error ? criticalError.message : String(criticalError)),
@@ -173,8 +195,8 @@ export function useContextualData(userLocation: UserLocation | null) {
                      });
                  }
             } finally {
-                // Only update loading state if this is the latest fetch operation
-                if (currentFetchId === fetchIdRef.current) {
+                // Only update loading state if not aborted
+                if (!signal.aborted) {
                     setIsLoadingEnvironmental(false);
                 }
             }
@@ -184,13 +206,20 @@ export function useContextualData(userLocation: UserLocation | null) {
         envFetcher();
       };
       fetchData();
+
+      // Cleanup function to abort ongoing requests when component unmounts or location changes
+      return () => {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      };
     } else {
       setWeatherData(null);
       setEnvironmentalData(null);
       setIsLoadingWeather(false);
       setIsLoadingEnvironmental(false);
     }
-  }, [userLocation]); // Removed selectedLanguage from dependencies as it's not directly used for fetching
+  }, [userLocation, retryTrigger]); // Added retryTrigger to trigger manual refetch
 
   // Effect to set localized error messages based on errorKey and uiStrings
   useEffect(() => {
@@ -248,5 +277,6 @@ export function useContextualData(userLocation: UserLocation | null) {
     weatherTabHistoricalRef,
     environmentalData,
     isLoadingEnvironmental,
+    retryFetch,
   };
 }

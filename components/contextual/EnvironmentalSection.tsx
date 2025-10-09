@@ -44,7 +44,7 @@ const SoilMetricItem: React.FC<{icon: React.ReactNode, label: string, value?: st
 
 
 const EnvironmentalSection: React.FC = () => {
-  const { environmentalData, isLoadingEnvironmental } = useDataContext();
+  const { environmentalData, isLoadingEnvironmental, retryFetch } = useDataContext();
   const { uiStrings, selectedLanguage } = useLocalizationContext();
 
   const renderEnvironmentalDataContent = () => {
@@ -57,7 +57,14 @@ const EnvironmentalSection: React.FC = () => {
                 <ExclamationTriangleIcon className="w-12 h-12 text-[var(--status-red-text)] mb-3" />
                 <p className="text-md font-semibold text-[var(--status-red-text)]">{uiStrings.errorTitle}</p>
                 {/* Using a generic message for soil data errors as specific error details might be too technical or already part of environmentalData.error string from the service */}
-                <p className="text-sm text-[var(--status-red-text)] opacity-90 mt-1">{uiStrings.soilDataErrorGeneral || "Could not retrieve soil data. Please check your connection or try again."}</p>
+                <p className="text-sm text-[var(--status-red-text)] opacity-90 mt-1 mb-3">{uiStrings.soilDataErrorGeneral || "Could not retrieve soil data. Please check your connection or try again."}</p>
+                <button
+                  onClick={retryFetch}
+                  className="px-4 py-2 text-sm font-medium text-white bg-[var(--primary-500)] rounded-md hover:bg-[var(--primary-600)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-500)] transition-colors"
+                  aria-label="Retry fetching environmental data"
+                >
+                  {uiStrings.retry || 'Retry'}
+                </button>
             </div>
         );
     }
