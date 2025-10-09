@@ -1,6 +1,11 @@
 
 import { LanguageCode } from './types';
 
+// Backend API Base URL
+// In development: Uses Vite proxy to localhost:3001
+// In production: Uses environment variable or falls back to relative paths
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 // API Endpoints - Proxied through backend, direct URLs removed from frontend constants.
 // export const OPEN_METEO_API_BASE = 'https://api.open-meteo.com/v1';
 // export const OPEN_METEO_ARCHIVE_API_BASE = 'https://archive-api.open-meteo.com/v1/archive';

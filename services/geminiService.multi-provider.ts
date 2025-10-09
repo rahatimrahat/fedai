@@ -8,7 +8,7 @@ import {
   type TestServiceResult
 } from '../types';
 import { AISettings } from '@/types/aiSettings';
-import { GEMINI_ANALYSIS_TIMEOUT_MS, GEMINI_TEST_TIMEOUT_MS } from '@/constants';
+import { GEMINI_ANALYSIS_TIMEOUT_MS, GEMINI_TEST_TIMEOUT_MS, API_BASE_URL } from '@/constants';
 import { handleApiError, logError } from '@/utils/errorHandler';
 
 /**
@@ -60,7 +60,7 @@ export async function analyzePlantHealth(
     console.warn('[DEBUG] No AI settings provided to analysis!');
   }
 
-  const PROXY_ENDPOINT = '/api/gemini-proxy';
+  const PROXY_ENDPOINT = `${API_BASE_URL}/api/gemini-proxy`;
 
   try {
     const controller = new AbortController();
@@ -151,7 +151,7 @@ export async function testAIService(aiSettings?: AISettings): Promise<TestServic
     }
   }
 
-  const PROXY_STATUS_ENDPOINT = `/api/gemini-proxy/status${
+  const PROXY_STATUS_ENDPOINT = `${API_BASE_URL}/api/gemini-proxy/status${
     queryParams.toString() ? '?' + queryParams.toString() : ''
   }`;
 

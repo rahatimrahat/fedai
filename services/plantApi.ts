@@ -1,7 +1,8 @@
 import { PlantData } from '../types/api';
 import { handleApiError, logError } from '@/utils/errorHandler';
+import { API_BASE_URL } from '@/constants';
 
-const PROXY_PLANT_ENDPOINT_PREFIX = '/api/plant';
+const PROXY_PLANT_ENDPOINT_PREFIX = `${API_BASE_URL}/api/plant`;
 
 export const fetchPlantData = async (plantId: string): Promise<PlantData> => {
   try {

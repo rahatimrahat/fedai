@@ -1,14 +1,15 @@
 
 import { type UserLocation, type WeatherData, type DailyWeatherData, type MonthlyAverageData, type TestServiceResult } from '@/types';
-import { 
+import {
     CACHE_PREFIX_WEATHER,
     CACHE_DURATION_WEATHER_MS,
-    SERVICE_TEST_TIMEOUT_MS
+    SERVICE_TEST_TIMEOUT_MS,
+    API_BASE_URL
 } from '../constants';
 import { getCachedOrFetch } from './cache'; // Import the generic cache utility
 import { handleApiError, logError } from '@/utils/errorHandler';
 
-const PROXY_WEATHER_ENDPOINT = '/api/weather';
+const PROXY_WEATHER_ENDPOINT = `${API_BASE_URL}/api/weather`;
 
 // // Helper function to calculate averages - MOVED TO BACKEND
 // function calculateAverages(dailyData: DailyWeatherData | null): MonthlyAverageData { ... }

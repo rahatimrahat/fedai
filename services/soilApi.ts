@@ -1,14 +1,15 @@
 import { type UserLocation, type TestServiceResult } from '@/types';
-import { 
-    CACHE_PREFIX_SOIL, 
+import {
+    CACHE_PREFIX_SOIL,
     CACHE_DURATION_SOIL_MS,
     SERVICE_TEST_TIMEOUT_MS,
-    GEOLOCATION_API_TIMEOUT_MS
+    GEOLOCATION_API_TIMEOUT_MS,
+    API_BASE_URL
 } from '@/constants';
 import { getCachedOrFetch } from './cache'; // Import the generic cache utility
 import { handleApiError, logError } from '@/utils/errorHandler';
 
-const PROXY_SOIL_ENDPOINT = '/api/soil';
+const PROXY_SOIL_ENDPOINT = `${API_BASE_URL}/api/soil`;
 
 // Defines the structure of the data fetched by the proxy and cached
 // This should align with what the backend controller returns for soil data

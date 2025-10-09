@@ -1,14 +1,15 @@
 
 import { type UserLocation, type TestServiceResult } from '../types';
-import { 
-    CACHE_KEY_IP_LOCATION, 
+import {
+    CACHE_KEY_IP_LOCATION,
     CACHE_DURATION_IP_LOCATION_MS,
-    SERVICE_TEST_TIMEOUT_MS
+    SERVICE_TEST_TIMEOUT_MS,
+    API_BASE_URL
 } from '../constants';
 import { getCachedOrFetch } from './cache'; // Import the generic cache utility
 import { handleApiError, logError } from '@/utils/errorHandler';
 
-const PROXY_IP_LOCATION_ENDPOINT = '/api/ip-location';
+const PROXY_IP_LOCATION_ENDPOINT = `${API_BASE_URL}/api/ip-location`;
 
 // This interface defines what fetchIpLocationViaProxy returns and what is cached
 interface IpLocationFetchResult {
