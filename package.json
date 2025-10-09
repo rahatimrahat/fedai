@@ -1,8 +1,28 @@
 {
-  "name": "fedai:-plant-health-ai",
-  "private": true,
-  "version": "0.0.0",
+  "name": "fedai-plant-health-ai",
+  "version": "1.0.0",
+  "description": "AI-powered plant health diagnostic application using image analysis and environmental data",
   "type": "module",
+  "keywords": [
+    "plant-health",
+    "ai-diagnosis",
+    "agriculture",
+    "image-analysis",
+    "react",
+    "typescript",
+    "gemini-api",
+    "plant-disease-detection"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rahatimrahat/fedai.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rahatimrahat/fedai/issues"
+  },
+  "homepage": "https://github.com/rahatimrahat/fedai#readme",
+  "author": "Fedai Contributors",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

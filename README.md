@@ -1,6 +1,24 @@
 # Fedai: Plant Health AI 🌿
 
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/rahatimrahat/fedai/releases)
+[![Tests](https://img.shields.io/badge/tests-22%20passing-brightgreen.svg)](https://github.com/rahatimrahat/fedai)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![React](https://img.shields.io/badge/React-19.1.0-blue.svg)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-blue.svg)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-6.2.0-purple.svg)](https://vitejs.dev)
+
 **Fedai is an intelligent assistant designed to help you understand and improve your plant's health.** By leveraging advanced image analysis and contextual data (like your location, local weather, and soil characteristics), Fedai provides insightful analysis and actionable solutions.
+
+## ✨ Key Features
+
+- 🤖 **AI-Powered Diagnosis** - Multi-provider support (Gemini, OpenRouter, Local AI)
+- 📸 **Image Analysis** - Advanced plant disease detection from photos
+- 🌍 **Environmental Context** - Location, weather, soil, and elevation data
+- 🌐 **Multi-Language** - Support for multiple languages
+- 📊 **Real-Time Monitoring** - Service health status dashboard
+- 🎨 **Modern UI** - Responsive design with smooth animations
+- 🧪 **Well-Tested** - Comprehensive test suite with 22 passing tests
+- 🐳 **Docker Ready** - Easy deployment with Docker Compose
 
 ## 📁 Repository Structure
 
