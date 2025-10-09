@@ -167,9 +167,9 @@ export function useLocationLogic() {
       } else if (initialBrowserStatus === 'prompt') {
           setStatus('awaiting-permission');
           setError(null);
-          // We now wait for UI interaction to call fetchDeviceLocation.
-          // An IP fallback might be considered here if desired after a timeout, or via UI.
-          // For now, strictly awaiting permission via UI.
+          // Automatically fall back to IP location while waiting for user decision
+          // This ensures the app works immediately without requiring GPS permission
+          fetchIpLocationData(false);
       } else if (initialBrowserStatus === 'denied') {
           setStatus('error-permission');
           setError(uiStrings.locationPermissionDeniedUserMessage);
