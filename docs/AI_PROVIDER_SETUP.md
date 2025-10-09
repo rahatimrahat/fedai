@@ -119,14 +119,14 @@ AI_MODEL=local-model-name
    - Save
 
 3. **Recommended Free Models:**
-   - `google/gemini-2.0-flash-exp:free` (recommended, completely free!)
-   - `meta-llama/llama-3.2-90b-vision-instruct` (free)
-   - `qwen/qwen-2-vl-72b-instruct` (free)
+   - `google/gemini-2.5-flash:free` (recommended, fast and completely free!)
+   - `meta-llama/llama-3.2-90b-vision-instruct:free` (free)
+   - `qwen/qwen-2-vl-72b-instruct:free` (free)
 
 4. **Paid Models (Higher Quality):**
-   - `anthropic/claude-3.5-sonnet`
-   - `openai/gpt-4-vision-preview`
-   - `google/gemini-pro-1.5`
+   - `x-ai/grok-2-vision-1212` (excellent vision capabilities)
+   - `anthropic/claude-3.5-sonnet` (superior reasoning)
+   - `openai/gpt-4o` (latest GPT-4 vision)
 
 5. **Pricing:**
    - Free models: $0
@@ -151,9 +151,9 @@ Running AI locally gives you complete privacy and no API costs, but requires pow
    - Install and open
 
 2. **Download a Vision Model:**
-   - Search for vision models (e.g., "llava", "bakllava", "cogvlm")
-   - Download a model that fits your hardware
-   - Recommended: `bakllava-1-7b` (smaller), `llava-1.6-34b` (better quality)
+   - Search for vision models in LM Studio
+   - **Recommended:** `Qwen2-VL-7B-Instruct` (best quality/performance balance)
+   - Alternatives: `MiniCPM-V-2.6` (smaller), `LLaVA-1.6-34B` (higher quality)
 
 3. **Start Local Server:**
    - Go to "Local Server" tab in LM Studio

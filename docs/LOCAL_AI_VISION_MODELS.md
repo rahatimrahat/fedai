@@ -8,26 +8,29 @@
 
 ### Best for Plant Analysis (Tested & Working)
 
-1. **LLaVA 1.6 Vicuna 7B/13B** (Recommended)
-   - Model: `llava-v1.6-vicuna-7b` or `llava-v1.6-vicuna-13b`
-   - Size: 7B (~4GB) or 13B (~8GB)
-   - Quality: Excellent for image understanding
-   - Speed: Fast on modern GPUs
-   - Download from: Hugging Face or LM Studio model library
-
-2. **MiniCPM-V 2.6** (Best Balance)
-   - Model: `openbmb/MiniCPM-V-2_6`
-   - Size: ~8GB
-   - Quality: State-of-the-art vision understanding
-   - Speed: Very efficient
-   - Special: Supports high-resolution images
-
-3. **Qwen2-VL 7B** (Latest & Powerful)
+1. **Qwen2-VL 7B Instruct** ⭐ **RECOMMENDED**
    - Model: `Qwen/Qwen2-VL-7B-Instruct`
-   - Size: ~8GB
-   - Quality: Excellent multilingual vision
-   - Speed: Fast inference
-   - Special: Great for detailed analysis
+   - Size: ~8GB VRAM
+   - Quality: Excellent vision understanding and reasoning
+   - Speed: Fast inference, optimized performance
+   - Special: Superior at detailed image analysis, multilingual support
+   - Best for: Most users with mid-range GPUs (RTX 3060/4060+)
+
+2. **MiniCPM-V 2.6** (Smallest, Good Quality)
+   - Model: `openbmb/MiniCPM-V-2_6`
+   - Size: ~6GB VRAM
+   - Quality: Excellent quality-to-size ratio
+   - Speed: Very fast and efficient
+   - Special: Supports high-resolution images
+   - Best for: Users with limited VRAM (6-8GB)
+
+3. **LLaVA 1.6 Vicuna 13B** (Classic Choice)
+   - Model: `llava-v1.6-vicuna-13b`
+   - Size: ~8GB VRAM
+   - Quality: Proven reliable image understanding
+   - Speed: Fast on modern GPUs
+   - Special: Well-established, stable model
+   - Best for: Users wanting tried-and-tested reliability
 
 4. **InternVL 2.5 8B** (High Accuracy)
    - Model: `OpenGVLab/InternVL2_5-8B`
@@ -55,13 +58,16 @@
 
 1. Open LM Studio
 2. Click "Search" or "Discover"
-3. Search for one of these:
+3. Search for **recommended model**:
    ```
-   llava-v1.6-vicuna-7b
-   MiniCPM-V-2.6
-   Qwen2-VL-7B
+   Qwen2-VL-7B-Instruct
    ```
-4. Download the model (GGUF format recommended)
+   Or alternatives:
+   ```
+   MiniCPM-V-2.6          (if you have limited VRAM)
+   llava-v1.6-vicuna-13b  (classic choice)
+   ```
+4. Download the model (GGUF format, Q4_K_M quantization recommended for balance)
 
 ### Step 2: Load the Model
 

@@ -31,16 +31,21 @@ Click the **robot icon (🤖)** in the top-right corner.
 2. Select "OpenRouter"
 3. Paste API key
 4. Wait for models to load (~2 seconds)
-5. Choose a free model: `google/gemini-2.0-flash-exp:free`
+5. Choose a capable model:
+   - **Free:** `google/gemini-2.5-flash:free`
+   - **Paid:** `x-ai/grok-2-vision-1212` or `anthropic/claude-3.5-sonnet`
 6. Click "Test Connection"
 7. Click "Save"
 
 #### Option C: Local AI (Advanced)
-1. Start LM Studio or another local server
-2. Select "Local OpenAI-Compatible"
-3. Click "LM Studio" preset (or enter custom URL)
-4. Click "Test Connection"
-5. Click "Save"
+1. Download a vision model in LM Studio:
+   - **Recommended:** `Qwen2-VL-7B-Instruct` (multimodal)
+   - Alternatives: `MiniCPM-V-2.6`, `LLaVA-1.6-34B`
+2. Start the local server in LM Studio
+3. In Fedai, select "Local OpenAI-Compatible"
+4. Click "LM Studio" preset (http://localhost:1234/v1)
+5. Click "Test Connection"
+6. Click "Save"
 
 ## 🌿 Use the App
 
