@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LocationSection from '@/components/LocationSection';
-import { DataContext } from '@/components/DataContext';
-import { LocalizationContext } from '@/components/LocalizationContext';
-import type { DataContextType } from '@/types';
+import { DataProvider } from '@/components/DataContext';
+import { LocalizationProvider } from '@/components/LocalizationContext';
+import type { UserLocation } from '@/types';
 
 const mockUiStrings = {
   locationInfoTitle: 'Location Information',

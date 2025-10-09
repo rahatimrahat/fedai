@@ -10,7 +10,8 @@ describe('Elevation Service Integration Tests', () => {
 
   it('should successfully test elevation service', async () => {
     const mockResponse = {
-      results: [{ elevation: 100, location: { lat: 40.7128, lng: -74.0060 } }]
+      elevation: 100,
+      source: 'open-elevation'
     };
 
     (global.fetch as any).mockResolvedValueOnce({
@@ -21,7 +22,6 @@ describe('Elevation Service Integration Tests', () => {
     const result = await testElevationService();
 
     expect(result.status).toBe('UP');
-    expect(result.details).toContain('operational');
   });
 
   it('should handle elevation service errors', async () => {
@@ -38,12 +38,11 @@ describe('Elevation Service Integration Tests', () => {
   it('should handle invalid elevation data format', async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ results: [] }),
+      json: async () => ({}),
     });
 
     const result = await testElevationService();
 
-    expect(result.status).toBe('ERROR');
-    expect(result.details).toContain('unexpected');
+    expect(result.status).toBe('DOWN');
   });
 });

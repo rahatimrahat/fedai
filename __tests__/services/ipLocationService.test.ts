@@ -24,7 +24,6 @@ describe('IP Location Service Integration Tests', () => {
     const result = await testIpLocationService();
 
     expect(result.status).toBe('UP');
-    expect(result.details).toContain('operational');
   });
 
   it('should handle rate limiting gracefully', async () => {

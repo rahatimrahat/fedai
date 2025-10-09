@@ -24,7 +24,7 @@ describe('Gemini AI Service Integration Tests', () => {
     const result = await testGeminiService();
 
     expect(result.status).toBe('UP');
-    expect(result.details).toContain('operational');
+    expect(result.details).toBe('Gemini API is accessible');
   });
 
   it('should handle Gemini API key missing', async () => {
