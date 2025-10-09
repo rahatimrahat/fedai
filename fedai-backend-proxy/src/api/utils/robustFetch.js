@@ -32,21 +32,38 @@ async function robustFetch(url, options = {}, timeout = GEOLOCATION_API_TIMEOUT_
 
       if (!response.ok) {
         const errorBody = await response.text();
-        // Throwing here will be caught by the catch block, allowing retries.
+
+        // Don't retry on rate limit (429), auth errors (401, 403), or client errors (4xx)
+        // These won't be fixed by retrying
+        if (response.status === 429 || response.status === 401 || response.status === 403 ||
+            (response.status >= 400 && response.status < 500)) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
+        }
+
+        // For server errors (5xx), retry
         throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
       }
       return response.json();
     } catch (error) {
       clearTimeout(timeoutId);
+
+      // Never retry on timeout, rate limit, or auth errors
       if (error.name === 'AbortError') {
-        // If it's a timeout, we don't retry by default. Re-throw.
         throw new Error(`Request to ${url} timed out after ${timeout}ms`);
       }
 
-      // Increment retry count for other errors
+      // Check if error is a non-retryable HTTP error (429, 401, 403, 4xx)
+      if (error.message.includes('status: 429') ||
+          error.message.includes('status: 401') ||
+          error.message.includes('status: 403') ||
+          (error.message.match(/status: (4\d\d)/) && !error.message.includes('status: 500'))) {
+        // Don't retry - immediately fail and let fallback provider handle it
+        throw error;
+      }
+
+      // Increment retry count for retryable errors (network issues, 5xx errors)
       retryCount++;
       if (retryCount >= maxRetries) {
-        // If max retries reached, re-throw the original error
         throw error;
       }
 
