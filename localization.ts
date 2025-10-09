@@ -261,6 +261,7 @@ const UI_STRINGS_TR: UiStrings = {
   cancelButtonLabel: "İptal",
   
   // Newly added for centralization
+  yourLocation: "Konumunuz",
   localEnvironmentInsightsTitle: "Yerel Ortam Bilgileri",
   typeYourAnswerPlaceholder: "Cevabınızı buraya yazın...",
   noSpecificSolutionsFoundTitle: "Spesifik Çözüm Bulunamadı",
@@ -465,6 +466,7 @@ const UI_STRINGS_EN: UiStrings = {
   cancelButtonLabel: "Cancel",
 
   // Newly added for centralization
+  yourLocation: "Your Location",
   localEnvironmentInsightsTitle: "Local Environment Insights",
   typeYourAnswerPlaceholder: "Type your answer here...",
   noSpecificSolutionsFoundTitle: "No Specific Solutions Found",
@@ -668,6 +670,7 @@ const UI_STRINGS_DE_FULL: UiStrings = {
   cancelButtonLabel: "Abbrechen",
 
   // Newly added for centralization
+  yourLocation: "Ihr Standort",
   localEnvironmentInsightsTitle: "Einblicke in die lokale Umgebung",
   typeYourAnswerPlaceholder: "Geben Sie hier Ihre Antwort ein...",
   noSpecificSolutionsFoundTitle: "Keine spezifischen Lösungen gefunden",
@@ -871,6 +874,7 @@ const UI_STRINGS_ES: UiStrings = {
   cancelButtonLabel: "Cancelar",
 
   // Newly added for centralization
+  yourLocation: "Su Ubicación",
   localEnvironmentInsightsTitle: "Información del Entorno Local",
   typeYourAnswerPlaceholder: "Escriba su respuesta aquí...",
   noSpecificSolutionsFoundTitle: "No se Encontraron Soluciones Específicas",
@@ -1074,6 +1078,7 @@ const UI_STRINGS_PT: UiStrings = {
   cancelButtonLabel: "Cancelar",
 
   // Newly added for centralization
+  yourLocation: "Sua Localização",
   localEnvironmentInsightsTitle: "Informações do Ambiente Local",
   typeYourAnswerPlaceholder: "Digite sua resposta aqui...",
   noSpecificSolutionsFoundTitle: "Nenhuma Solução Específica Encontrada",
@@ -1277,6 +1282,7 @@ const UI_STRINGS_FR: UiStrings = {
   cancelButtonLabel: "Annuler",
 
   // Newly added for centralization
+  yourLocation: "Votre Localisation",
   localEnvironmentInsightsTitle: "Aperçu de l'Environnement Local",
   typeYourAnswerPlaceholder: "Tapez votre réponse ici...",
   noSpecificSolutionsFoundTitle: "Aucune Solution Spécifique Trouvée",

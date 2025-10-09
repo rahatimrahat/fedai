@@ -166,6 +166,20 @@ const AnalysisFlowController: React.FC = () => {
         </form>
       </BounceIn>
 
+      {/* Always show LocationSection so user can see their location before uploading image */}
+      <BounceIn>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-semibold text-[var(--text-headings)] mb-4 text-center sm:text-left" style={{fontSize: 'var(--h2-size)'}}>
+              {uiStrings.yourLocation || 'Your Location'}
+            </h2>
+            <div className="grid grid-cols-1 gap-6">
+              <LocationSection />
+            </div>
+          </div>
+        </div>
+      </BounceIn>
+
       {showContextualSections && (
         <BounceIn>
           <div ref={contextualDataGroupRef} className="space-y-6">
@@ -180,8 +194,7 @@ const AnalysisFlowController: React.FC = () => {
               <h2 className="text-2xl font-semibold text-[var(--text-headings)] mb-4 text-center sm:text-left" style={{fontSize: 'var(--h2-size)'}}>
                 {uiStrings.localEnvironmentInsightsTitle}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> 
-                  <LocationSection />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <WeatherSection />
                   <EnvironmentalSection />
               </div>
