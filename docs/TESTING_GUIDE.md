@@ -12,12 +12,12 @@ The application is now running in Docker containers:
 ### 1. Google Gemini Provider
 - Get API key from: https://aistudio.google.com/apikey
 - Free tier available
-- Models to test: `gemini-2.0-flash-exp`, `gemini-1.5-pro`, `gemini-1.5-flash`
+- Models to test: `gemini-2.5-flash`, 
 
 ### 2. OpenRouter Provider
 - Get API key from: https://openrouter.ai/keys
 - Some free models available (look for `:free` suffix)
-- Recommended free model: `google/gemini-2.0-flash-exp:free`
+- Recommended free model: `google/gemini-2.5-flash:free`
 - Paid models: Claude, GPT-4 Vision, Llama 3.2 Vision, etc.
 
 ### 3. Local OpenAI-Compatible Provider
@@ -74,9 +74,9 @@ Base URL: `http://localhost:5001/v1`
 3. **Expected**:
    - Loading spinner appears briefly
    - Model dropdown shows 3 options:
-     - Gemini 2.0 Flash (Experimental)
-     - Gemini 1.5 Pro
-     - Gemini 1.5 Flash
+     - Gemini 2.5 Flash 
+     - Gemini 2.5 Pro
+     
 4. Click "Test Connection"
 5. **Expected**: Success message "Gemini API is accessible"
 
@@ -91,11 +91,11 @@ Base URL: `http://localhost:5001/v1`
 8. **Expected**:
    - Analysis starts
    - Results show disease information, treatment recommendations
-   - Response includes `aiProvider: "gemini"` and `aiModel: "gemini-2.0-flash-exp"`
+   - Response includes `aiProvider: "gemini"` and `aiModel: "gemini-2.5-flash"`
 
 #### Test 2.4: Model Selection
 1. Open AI Settings
-2. Change model to "gemini-1.5-pro"
+2. Change model to "gemini-2.5-pro"
 3. Save settings
 4. Run another analysis
 5. **Expected**: Analysis uses the selected model
@@ -116,7 +116,7 @@ Base URL: `http://localhost:5001/v1`
 7. **Expected**: Success message
 
 #### Test 3.2: Free Model Analysis
-1. Select `google/gemini-2.0-flash-exp:free` from model dropdown
+1. Select `google/gemini-2.5-flash:free` from model dropdown
 2. Save settings
 3. Run plant analysis
 4. **Expected**:
