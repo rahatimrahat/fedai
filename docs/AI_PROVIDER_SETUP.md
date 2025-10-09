@@ -93,12 +93,12 @@ AI_MODEL=local-model-name
    - Save
 
 3. **Models Available:**
-   - `gemini-2.0-flash-exp` (default, recommended)
-   - `gemini-1.5-pro`
-   - `gemini-1.5-flash`
+   - `gemini-2.5-flash` (default, recommended)
+   - `gemini-2.5-pro`
+   
 
 4. **Pricing:**
-   - Free tier: 15 requests/minute, 1500 requests/day
+   - Free tier: 
    - [Full pricing details](https://ai.google.dev/pricing)
 
 ---
@@ -121,12 +121,12 @@ AI_MODEL=local-model-name
 3. **Recommended Free Models:**
    - `google/gemini-2.5-flash:free` (recommended, fast and completely free!)
    - `meta-llama/llama-3.2-90b-vision-instruct:free` (free)
-   - `qwen/qwen-2-vl-72b-instruct:free` (free)
+   - `qwen/qwen-2.5-vl-72b-instruct:free` (free)
 
 4. **Paid Models (Higher Quality):**
-   - `x-ai/grok-2-vision-1212` (excellent vision capabilities)
-   - `anthropic/claude-3.5-sonnet` (superior reasoning)
-   - `openai/gpt-4o` (latest GPT-4 vision)
+   - `x-ai/grok-4` (excellent vision capabilities)
+   - `anthropic/claude-4.5-sonnet` (superior reasoning)
+   - `openai/gpt-5` (latest GPT-4 vision)
 
 5. **Pricing:**
    - Free models: $0
@@ -140,7 +140,7 @@ AI_MODEL=local-model-name
 Running AI locally gives you complete privacy and no API costs, but requires powerful hardware.
 
 #### Prerequisites:
-- **GPU Recommended:** NVIDIA GPU with 8GB+ VRAM for vision models
+- **GPU Recommended:** NVIDIA GPU with 16GB+ VRAM for vision models
 - **CPU Option:** Possible but slow (24GB+ RAM recommended)
 - **Storage:** 10-50GB for models
 
@@ -152,7 +152,7 @@ Running AI locally gives you complete privacy and no API costs, but requires pow
 
 2. **Download a Vision Model:**
    - Search for vision models in LM Studio
-   - **Recommended:** `Qwen2-VL-7B-Instruct` (best quality/performance balance)
+   - **Recommended:** `Qwen2.5-VL-7B-Instruct` (best quality/performance balance)
    - Alternatives: `MiniCPM-V-2.6` (smaller), `LLaVA-1.6-34B` (higher quality)
 
 3. **Start Local Server:**
@@ -238,14 +238,14 @@ Running AI locally gives you complete privacy and no API costs, but requires pow
 You can specify custom models in the AI Settings modal:
 
 **For Gemini:**
-- `gemini-2.0-flash-exp`
-- `gemini-1.5-pro`
-- `gemini-1.5-flash`
+- `gemini-2.5-flash`
+- `gemini-2.5-pro`
+
 
 **For OpenRouter:**
 - Browse models at [OpenRouter Docs](https://openrouter.ai/docs#models)
 - Use format: `provider/model-name`
-- Example: `anthropic/claude-3.5-sonnet`
+- Example: `anthropic/claude-4.5-sonnet`
 
 **For Local AI:**
 - Use the model name shown in your local server
@@ -364,7 +364,7 @@ User settings in the UI (localStorage) override backend defaults. This allows us
 ### Example 1: Free Setup (No API Key Needed)
 
 1. Download LM Studio
-2. Download `bakllava-1-7b` model
+2. Download `Qwen 2.5 7b VL` model
 3. Start local server
 4. In Fedai, select "Local AI" and use LM Studio preset
 5. Completely free plant analysis!
@@ -374,7 +374,7 @@ User settings in the UI (localStorage) override backend defaults. This allows us
 1. Get Gemini API key
 2. Select "Google Gemini" in Fedai
 3. Enter API key
-4. Use default model: `gemini-2.0-flash-exp`
+4. Use default model: `gemini-2.5-flash`
 5. Excellent results with reasonable pricing
 
 ### Example 3: Free Cloud (No Hardware Required)
@@ -383,7 +383,7 @@ User settings in the UI (localStorage) override backend defaults. This allows us
 2. Get free API key
 3. Select "OpenRouter" in Fedai
 4. Enter API key
-5. Use model: `google/gemini-2.0-flash-exp:free`
+5. Use model: `google/gemini-2.5-flash:free`
 6. Completely free, no local hardware needed!
 
 ---
