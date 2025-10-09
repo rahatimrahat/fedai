@@ -13,8 +13,33 @@ const app = express();
 
 // --- CORS Configuration ---
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:8000', 'http://127.0.0.1:3000', 'http://127.0.0.1:8000', 'http://localhost:5173', 'https://*.onrender.com', 'http://127.0.0.1:5173'], // Added common Vite port
-  optionsSuccessStatus: 200
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:8000',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:8000',
+      'http://localhost:5173',
+      'http://127.0.0.1:5173'
+    ];
+
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    // Allow all onrender.com subdomains
+    if (origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+
+    // Allow explicit origins
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
+  optionsSuccessStatus: 200,
+  credentials: true
 };
 app.use(cors(corsOptions));
 app.set('trust proxy', 1); // Trust the first proxy
